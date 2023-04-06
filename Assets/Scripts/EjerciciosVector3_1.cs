@@ -24,8 +24,8 @@ public class EjerciciosVector3_1 : MonoBehaviour
     void Update()
     {
 
-        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorA.x, VectorA.y, VectorA.z), color:Color.black);
-        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorB.x, VectorB.y, VectorB.z), color:Color.white);
+        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorA.x, VectorA.y, VectorA.z), color:Color.white);
+        Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorB.x, VectorB.y, VectorB.z), color:Color.black);
         Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorC.x, VectorC.y, VectorC.z), _color);
     }
 

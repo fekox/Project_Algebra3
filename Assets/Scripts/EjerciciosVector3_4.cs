@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class EjerciciosVector3_2 : MonoBehaviour
+public class EjerciciosVector3_4 : MonoBehaviour
 {
     [SerializeField]
     private Color _color;
@@ -15,17 +15,11 @@ public class EjerciciosVector3_2 : MonoBehaviour
     private Vector3 VectorB;
 
     private Vector3 VectorC;
-
-    private void Start()
-    {
-        VectorC = VectorA - VectorB;
-        VectorC *= -1;
-
-    }
-
     void Update()
     {
-        Debug.Log(VectorC);
+        VectorC = Vector3.Cross(VectorA, VectorB);
+        VectorC.x *= -1;
+        VectorC.z *= -1;
 
         Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorA.x, VectorA.y, VectorA.z), color: Color.white);
         Debug.DrawLine(new Vector3(0, 0, 0), new Vector3(VectorB.x, VectorB.y, VectorB.z), color: Color.black);
@@ -43,8 +37,8 @@ public class EjerciciosVector3_2 : MonoBehaviour
         Handles.Label(new Vector3(VectorB.x - 8, VectorB.y - 4, VectorB.z), "Z = " + VectorB.z);
 
         Handles.Label(new Vector3(VectorC.x + 2, VectorC.y, VectorC.z), "X = " + VectorC.x);
-        Handles.Label(new Vector3(VectorC.x + 2, VectorC.y - 2, VectorC.z), "Y = " + VectorC.y);
-        Handles.Label(new Vector3(VectorC.x + 2, VectorC.y - 4, VectorC.z), "Z = " + VectorC.z);
+        Handles.Label(new Vector3(VectorC.x + 2, VectorC.y - 8, VectorC.z), "Y = " + VectorC.y);
+        Handles.Label(new Vector3(VectorC.x + 2, VectorC.y - 16, VectorC.z), "Z = " + VectorC.z);
 
         Handles.Label(new Vector3(2, 0, 0), "X = " + 0);
         Handles.Label(new Vector3(2, -2, 0), "Y = " + 0);
