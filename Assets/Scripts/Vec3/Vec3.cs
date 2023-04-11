@@ -15,7 +15,7 @@ namespace CustomMath
         public float z;
         public float sqrMagnitude { get { return (x * x + y * y + z * z); } } //Devuelve la longitud del vector al cuadrado.
         public Vec3 normalized { get { return new Vec3(x / magnitude, y / magnitude, z / magnitude); } } //Devuelve el vector normalizado. 
-        public float magnitude { get { return Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2); } } //Devuelve la longitud del vector.
+        public float magnitude { get { return MathF.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2)); } } //Devuelve la longitud del vector.
         #endregion
 
         #region constants

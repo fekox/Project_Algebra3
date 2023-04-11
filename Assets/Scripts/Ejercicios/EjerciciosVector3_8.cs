@@ -19,7 +19,7 @@ public class EjerciciosVector3_8 : MonoBehaviour
 
     private void Start()
     {
-        VectorC = Vec3.Lerp(VectorA, VectorB, 0.5f);
+        VectorC = (VectorA + VectorB).normalized * Vec3.Distance(VectorA, VectorB);
     }
 
     void Update()
