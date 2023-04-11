@@ -197,14 +197,14 @@ namespace CustomMath
             Vec3 direction = (b - a);
             if (t < 0) t = 0;
             if (t > 1) t = 1;
-            return a + (t * direction);
+            return a + (direction * t);
         }
         public static Vec3 LerpUnclamped(Vec3 a, Vec3 b, float t) //Interpola linealmente entre dos vectores (Calcular el valor aproximado de una magnitud entre dos vectores).
         {
             //https://docs.unity3d.com/ScriptReference/Vector3.LerpUnclamped.html
 
             Vec3 direction = (b - a);
-            return a + (t * direction);
+            return a + (direction * t);
         }
         public static Vec3 Max(Vec3 a, Vec3 b) //Devuelve los valores mas altos entre dos vectores.
         {
@@ -267,7 +267,7 @@ namespace CustomMath
         {
             //https://docs.unity3d.com/ScriptReference/Vector3.Reflect.html
 
-            return inDirection - 2f * (Dot(inDirection, inNormal)) * inNormal;
+            return inDirection - 2 * (Dot(inDirection, inNormal)) * inNormal;
         }
         public void Set(float newX, float newY, float newZ) //Setea los valores de un vector.
         {

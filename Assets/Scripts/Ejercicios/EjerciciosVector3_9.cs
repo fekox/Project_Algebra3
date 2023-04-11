@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using CustomMath;
 
-public class EjerciciosVector3_7 : MonoBehaviour
+public class EjerciciosVector3_9 : MonoBehaviour
 {
     [SerializeField]
     private Color _color;
@@ -19,11 +19,13 @@ public class EjerciciosVector3_7 : MonoBehaviour
 
     private void Start()
     {
-        VectorC = Vec3.Project(VectorA, VectorB);
+        VectorC = Vec3.Reflect(VectorA, VectorB.normalized);
     }
 
     void Update()
     {
+        print(VectorC);
+
         Debug.DrawLine(new Vec3(0, 0, 0), new Vec3(VectorA.x, VectorA.y, VectorA.z), color: Color.white);
         Debug.DrawLine(new Vec3(0, 0, 0), new Vec3(VectorB.x, VectorB.y, VectorB.z), color: Color.black);
         Debug.DrawLine(new Vec3(0, 0, 0), new Vec3(VectorC.x, VectorC.y, VectorC.z), _color);
