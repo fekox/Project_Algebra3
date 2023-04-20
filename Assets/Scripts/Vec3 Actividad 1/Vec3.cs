@@ -294,6 +294,17 @@ namespace CustomMath
             y = y / magnitude;
             z = z / magnitude;
         }
+
+        public static Vec3 Normalize(Vec3 value)
+        {
+            float num = Magnitude(value);
+            if (num > 1E-05f)
+            {
+                return value / num;
+            }
+
+            return Zero;
+        }
         #endregion
 
         #region Internals
