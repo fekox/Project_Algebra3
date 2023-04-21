@@ -78,9 +78,37 @@ public class Activity_Planes
             var_Distance = -var_Distance;
         }
 
+
+        //https://docs.unity3d.com/ScriptReference/Plane.GetDistanceToPoint.html
         public float GetDistanceToPoint(Vec3 point) //Retorna una distancia desde el plano hasta el punto dado.
         {
             return Vec3.Dot(var_Normal, point) + var_Distance; //Obtenes la distancia a la que se encuentra el punto del plano.
         }
+
+
+        //https://docs.unity3d.com/ScriptReference/Plane.GetSide.html
+        public bool GetSide(Vec3 point) //Retorna si un punto se encuentra dentor del lado positivo del plano o no.
+        {
+            return Vec3.Dot(var_Normal, point) + var_Distance > 0.0f; //Si el resultado del producto punto mas la distancia es mayor a zero retorna true
+                                                                      //(ya que se encuentra dentro del lado positivo), sino retorna false.
+        }
+
+
+        public bool SameSide(Vec3 inPt0, Vec3 inPt1) //Retorna si dos puntos se encuentran del mismo lado del plano.
+        {
+            var distanceToPoint0 = GetDistanceToPoint(inPt0); //Calculo la distancia al punto 0;
+            var distanceToPoint1 = GetDistanceToPoint(inPt1); //Calculo la distancia al punto 1;
+
+            if (distanceToPoint0 >= 0.0f && distanceToPoint1 >= 0.0f) //Si la distancia de los dos puntos es mayor o igual a zero retorno true;
+            {
+                return true;
+            }
+
+            else //Si no retorno false.
+            {
+                return false;
+            }
+        }
+
     }
 }
