@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using CustomMath;
 using Unity.VisualScripting;
+using System.Numerics;
+using System.Runtime.ConstrainedExecution;
 
 public class Activity_Planes 
 {
-    Plane toSeeTheFunctions;
-    Vector3 a;
+    //Plane toSeeTheFunctions;
+    //Vector3 a;
     public struct MrPlane 
     {
         private Vec3 var_Normal;
@@ -29,7 +31,13 @@ public class Activity_Planes
         }
 
         //Retorna una copia del plano con sus caras en la direccion opuesta.
-        public MrPlane flipped => new MrPlane(-var_Normal, 0f - var_Distance);
+        public MrPlane flipped 
+        {
+            get 
+            { 
+                return new MrPlane(-var_Normal, -var_Distance); 
+            }
+        } 
 
 
         //Crear un Plano: https://docs.unity3d.com/ScriptReference/Plane-ctor.html
@@ -52,5 +60,15 @@ public class Activity_Planes
             var_Normal = Vec3.Normalize(Vec3.Cross(b - a, c - a)); //La normal es igual al producto cruz de los 3 vectores normalizado.
             var_Distance = 0f - Vec3.Dot(var_Normal, a); //La distancia es igual al producto punto de la normal y a.
         }
+
+
+        //https://docs.unity3d.com/ScriptReference/Plane.ClosestPointOnPlane.html
+        public Vec3 ClosestPointOnPlane(Vec3 point) //Retorna un punto en el plano que está más cerca del punto dado.
+        {
+            var num = Vec3.Dot(var_Normal, point) + var_Distance; //Obtenes la distancia a la que se encuentra el punto del plano.
+            return point - (var_Normal * num); //Retorna el punto dentro del plano que se encuentra mas cerca del punto que le dimos.
+        }
+
+
     }
 }
