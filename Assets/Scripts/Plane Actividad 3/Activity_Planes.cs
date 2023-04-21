@@ -10,6 +10,9 @@ public class Activity_Planes
 {
     //Plane toSeeTheFunctions;
     //Vector3 a;
+
+    //Cuando la locura gana la batalla: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Geometry/Plane.cs
+
     public struct MrPlane 
     {
         private Vec3 var_Normal;
@@ -69,6 +72,15 @@ public class Activity_Planes
             return point - (var_Normal * num); //Retorna el punto dentro del plano que se encuentra mas cerca del punto que le dimos.
         }
 
+        public void Flip() //Hace que el plano mire en la direccion opuesta.
+        {
+            var_Normal = -var_Normal;
+            var_Distance = -var_Distance;
+        }
 
+        public float GetDistanceToPoint(Vec3 point) //Retorna una distancia desde el plano hasta el punto dado.
+        {
+            return Vec3.Dot(var_Normal, point) + var_Distance; //Obtenes la distancia a la que se encuentra el punto del plano.
+        }
     }
 }
