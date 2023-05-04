@@ -11,11 +11,6 @@ using UnityEngine.UIElements;
 
 public class Activity_Planes 
 {
-    //Plane toSeeTheFunctions;
-    //Vector3 a;
-
-    //Cuando la locura gana la batalla: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Geometry/Plane.cs
-
     public struct MrPlane 
     {
         #region Variables
