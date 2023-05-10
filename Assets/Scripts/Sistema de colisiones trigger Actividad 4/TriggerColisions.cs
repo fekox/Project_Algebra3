@@ -7,5 +7,15 @@ using System.Security.Cryptography;
 
 public class TriggerColisions : MonoBehaviour
 {
-  
+   struct Line 
+   {
+        public Vec3 origin;
+        public Vec3 direction;
+
+        public Line(Vec3 origin, Vec3 direction) 
+        {
+            this.origin = origin;
+            this.direction = direction;
+        }
+   }
 }
