@@ -7,12 +7,5 @@ using System.Security.Cryptography;
 
 public class TriggerColisions : MonoBehaviour
 {
-    [SerializeField] private GameObject plane;
-
-
-    void OnDrawGizmosSelected()
-    {
-
-    }
-
+  
 }

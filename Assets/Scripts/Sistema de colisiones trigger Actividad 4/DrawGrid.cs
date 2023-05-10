@@ -8,15 +8,15 @@ public class DrawGrid : MonoBehaviour
 {
     [Header("Setup")]
     
-    [SerializeField] private float delta = 0.2f;
+    [SerializeField] private float delta = 0.2f; //Distancia de los puntos dentro de la grilla.
     
-    private const int maxPoints = 10;
+    private const int maxPoints = 10; //Tamaño maximo de la grilla.
 
-    public Vec3[,,] grid = new Vec3[maxPoints, maxPoints, maxPoints];
+    public Vec3[,,] grid = new Vec3[maxPoints, maxPoints, maxPoints]; //Crea la grilla.
 
-    public bool drawGrid = true;
+    public bool drawGrid = true; //Booleano que activa o deactiva la grilla.
 
-    void Start()
+    void Start() //Se posicionan todos los puntos de la grilla.
     {
         for (int i = 0; i < grid.GetLength(0); i++)
         {
@@ -30,7 +30,7 @@ public class DrawGrid : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmos() //Dibuja la grilla si el bool es true.
     {
         if (drawGrid == true) 
         {
