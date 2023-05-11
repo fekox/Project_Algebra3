@@ -8,7 +8,7 @@ public class DrawGrid : MonoBehaviour
 {
     [Header("Setup")]
     
-    [SerializeField] private float delta = 0.2f; //Distancia de los puntos dentro de la grilla.
+    public static float delta = 1; //Distancia de los puntos dentro de la grilla.
     
     public static int maxPoints = 10; //Tamaño maximo de la grilla.
 
@@ -41,7 +41,7 @@ public class DrawGrid : MonoBehaviour
                     for (int k = 0; k < grid.GetLength(2); k++)
                     {
                         Gizmos.color = Color.white;
-                        Gizmos.DrawSphere(grid[i, j, k], 0.02f);
+                        Gizmos.DrawSphere(grid[i, j, k], 0.1f);
                     }
                 }
             }

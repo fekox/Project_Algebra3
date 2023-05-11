@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using CustomMath;
 using static Activity_Planes;
-using System.Security.Cryptography;
 using System;
+using System.Linq;
 
 public class TriggerColisions : MonoBehaviour
 {
     [Header("References")]
-    private List<MrPlane> planes;
-    private List<Vec3> checkPoints;
-    public List<Vec3> pointsInside;
-    public Vec3 nearestPoint;
+    private List<MrPlane> planes; //Lista donde guardo los planos.
 
-   struct Line 
+    private List<Vec3> checkPoints; //Lista donde guardo los puntos que se chequean.
+    
+    public List<Vec3> pointsInside; //Lista donde guardo los puntos dentro del obj.
+    
+    public Vec3 nearestPoint; //Punto mas cercano de la grilla.
+
+   struct Line //Struc de la recta.
    {
         public Vec3 origin;
         public Vec3 direction;
@@ -36,12 +39,12 @@ public class TriggerColisions : MonoBehaviour
         
         pointsInside = new List<Vec3>(); //Inicializo los que estaran dentro de los objetos.
 
-        for (int i = 0; i < mesh.vertices.Length; i += 3) //Setteo los vertices de cada plano.
+        for (int i = 0; i < mesh.GetIndices(0).Length; i += 3) //Setteo los vertices de cada plano.
         {
             Vec3 vertA = new Vec3(mesh.vertices[mesh.GetIndices(0)[i]]);
             Vec3 vertB = new Vec3(mesh.vertices[mesh.GetIndices(0)[i + 1]]);
             Vec3 vertC = new Vec3(mesh.vertices[mesh.GetIndices(0)[i + 2]]);
-            planes.Add(new MrPlane(vertA, vertB, vertC));
+            planes.Add(new MrPlane(vertA, vertB, vertC)); //Los agrego a la lista de planos.
         }
 
         for (int i = 0; i < planes.Count; i++)  //Setteo la normal de la mesh y el normal and psoition de los planos. 
@@ -52,24 +55,56 @@ public class TriggerColisions : MonoBehaviour
         }
     }
 
-    private int GetMaxGridSize(int num, float scale, float nearestPoint)  
+    private void Update()
     {
-        return (int)(nearestPoint) + (3 + (int)scale - 1) * num;
+        Mesh mesh = GetComponent<MeshFilter>().mesh; //Le setteo el componente a la mesh.
+        planes.Clear();// limpio la lista de planos.
+
+        for (int i = 0;i < mesh.GetIndices(0).Length; i+= 3)  //Setteo todos los vertices de cada plano. (Cada cara esta conformada por dos triangulos).
+        {
+            Vec3 VerticeA = new Vec3((transform.TransformPoint(mesh.vertices[mesh.GetIndices(0)[i]])));
+
+            Vec3 VerticeB = new Vec3((transform.TransformPoint(mesh.vertices[mesh.GetIndices(0)[i + 1]])));
+
+            Vec3 VerticeC = new Vec3((transform.TransformPoint(mesh.vertices[mesh.GetIndices(0)[i + 2]])));
+
+            var plane = new MrPlane(VerticeA, VerticeB, VerticeC); //Creo los planos en base a los vertices setteados.
+
+            plane.normal *= -1; //Paso la normal a negativo.
+            
+            planes.Add(plane); //Agrego el plano a la lista del plano.
+        }
+
+        for(int i = 0; i < planes.Count; i++) //Flipeo los planos para que miren en la direccion correcta.
+        {
+            planes[i].Flip();
+        }
+
+        SetNearestPoint(); //Obtengo y setteo el punto mas cercano de la grilla al obj.
+        CheckPoints(); //Chequeo todos los puntos de la grilla.
+        CounterPointsOnTheObj(); //Cuento cuantos puntos hay dentro del obj.
+
+        Debug.Log("Points: " + pointsInside.Count); //Para saber cuantos puntos hay dentro de cada obj.
+    }
+
+    private int GetMaxGridSize(float nearestPoint, float scale, int number) //Retorno el tamaño maximo de la grilla.
+    {
+        return (int)(nearestPoint) + (3 + (int)scale - 1) * number;
     }
 
     private void CheckPoints() //Chequea todos los puntos de la grilla.
     {
         checkPoints.Clear();
 
-        int maxGridX = GetMaxGridSize(1, transform.localScale.x, nearestPoint.x);
-        int maxGridY = GetMaxGridSize(1, transform.localScale.y, nearestPoint.y);
-        int maxGridZ = GetMaxGridSize(1, transform.localScale.z, nearestPoint.z);
+        int maxGridX = GetMaxGridSize(nearestPoint.x, transform.localScale.x, 1);
+        int maxGridY = GetMaxGridSize(nearestPoint.y, transform.localScale.y, 1);
+        int maxGridZ = GetMaxGridSize(nearestPoint.z, transform.localScale.z, 1);
 
-        int minGridX = GetMaxGridSize(-1, transform.localScale.x, nearestPoint.x);
-        int minGridY = GetMaxGridSize(-1, transform.localScale.y, nearestPoint.y);
-        int minGridZ = GetMaxGridSize(-1, transform.localScale.z, nearestPoint.z);
+        int minGridX = GetMaxGridSize(nearestPoint.x, transform.localScale.x, -1);
+        int minGridY = GetMaxGridSize(nearestPoint.y, transform.localScale.y, -1);
+        int minGridZ = GetMaxGridSize(nearestPoint.z, transform.localScale.z, -1);
 
-        int gridMaxSize = DrawGrid.maxPoints - 1;
+        var gridMaxSize = DrawGrid.maxPoints - 1;
 
         maxGridX = Mathf.Clamp(maxGridX, 0, gridMaxSize);
         maxGridY = Mathf.Clamp(maxGridY, 0, gridMaxSize);
@@ -91,7 +126,7 @@ public class TriggerColisions : MonoBehaviour
         }
     }
 
-    bool PointPlaneCollision(MrPlane plane, Line line, out Vec3 point) 
+    bool LinePlaneCollision(MrPlane plane, Line line, out Vec3 point) //Algoritmo de colision recta con plano.
     {
         point = Vec3.Zero;
 
@@ -112,7 +147,7 @@ public class TriggerColisions : MonoBehaviour
         return true;
     }
 
-    private bool IsCorrectPlane(MrPlane plane, Vec3 point) 
+    private bool IsCorrectPlane(MrPlane plane, Vec3 point) //Booleano paraa detectar si el punto se encuentra en el plano correcto. (Cara del obj).
     {
         float vertX1 = plane.verA.x;
         float vertX2 = plane.verB.x;
@@ -121,10 +156,6 @@ public class TriggerColisions : MonoBehaviour
         float vertY1 = plane.verA.y;
         float vertY2 = plane.verB.y;
         float vertY3 = plane.verC.y;
-
-        float vertZ1 = plane.verA.z;
-        float vertZ2 = plane.verB.z;
-        float vertZ3 = plane.verC.z;
 
         float triangleAreaOrigin = Mathf.Abs((vertX2 - vertX1) * (vertY3 - vertY1) - (vertX3 - vertX1) * (vertY2 - vertY1)); //Area del triangulo.
 
@@ -135,5 +166,58 @@ public class TriggerColisions : MonoBehaviour
 
         // Si la suma del area de los 3 triangulos es igual a la del original estamos adentro
         return Math.Abs(triangleArea1 + triangleArea2 + triangleArea3 - triangleAreaOrigin) < Vec3.epsilon;
+    }
+
+    void CounterPointsOnTheObj() //Cuento cuantos puntos hay dentro del obj.
+    {
+        pointsInside.Clear();
+
+        foreach (var point in checkPoints) 
+        {
+            Line line = new Line(point, Vec3.Forward * 10f);
+            var counter = 0;
+
+            foreach (var plane in planes) 
+            {
+                if (LinePlaneCollision(plane, line, out Vec3 interpolate))
+                {
+                    if (IsCorrectPlane(plane, interpolate)) 
+                    {
+                        counter++;
+                    }
+                }
+            }
+
+            if (counter % 2 == 1) 
+            {
+                pointsInside.Add(point);
+            }
+        }
+    }
+
+    int GetNearestPositionValue(float position) //Obtengo el punto mas sercano de la grilla al obj. 
+    {
+        var post = position / DrawGrid.delta;
+
+        float xPost = post - (int)post > 0.5f ? post + 1.0f : post;
+
+        xPost = Mathf.Clamp(xPost, 0, DrawGrid.maxPoints - 1);
+
+        return (int)xPost;
+    }
+
+    void SetNearestPoint() //Setteo el punto mas sercano de la grilla.
+    {
+        var near = nearestPoint;
+        var x = GetNearestPositionValue(transform.position.x);
+        var y = GetNearestPositionValue(transform.position.y);
+        var z = GetNearestPositionValue(transform.position.z);
+
+        nearestPoint = DrawGrid.grid[x, y, z];
+    }
+
+    public bool CheckPointsInAnotherMesh(Vec3 externalPoint) //Cheque si hay algun punto dentro del obj.
+    {
+        return pointsInside.Any(pointsInside => pointsInside == externalPoint);   
     }
 }
