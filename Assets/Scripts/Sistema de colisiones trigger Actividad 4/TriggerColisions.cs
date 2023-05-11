@@ -52,7 +52,7 @@ public class TriggerColisions : MonoBehaviour
         }
     }
 
-    private int GetMaxGridSize(int num, float scale, float nearestPoint) 
+    private int GetMaxGridSize(int num, float scale, float nearestPoint)  
     {
         return (int)(nearestPoint) + (3 + (int)scale - 1) * num;
     }
@@ -61,13 +61,13 @@ public class TriggerColisions : MonoBehaviour
     {
         checkPoints.Clear();
 
-        int maxGridX = GetMaxGridSize((int)nearestPoint.x, transform.localScale.x, 1);
-        int maxGridY = GetMaxGridSize((int)nearestPoint.y, transform.localScale.y, 1);
-        int maxGridZ = GetMaxGridSize((int)nearestPoint.z, transform.localScale.z, 1);
+        int maxGridX = GetMaxGridSize(1, transform.localScale.x, nearestPoint.x);
+        int maxGridY = GetMaxGridSize(1, transform.localScale.y, nearestPoint.y);
+        int maxGridZ = GetMaxGridSize(1, transform.localScale.z, nearestPoint.z);
 
-        int minGridX = GetMaxGridSize((int)nearestPoint.x, transform.localScale.x, -1);
-        int minGridY = GetMaxGridSize((int)nearestPoint.y, transform.localScale.y, -1);
-        int minGridZ = GetMaxGridSize((int)nearestPoint.z, transform.localScale.z, -1);
+        int minGridX = GetMaxGridSize(-1, transform.localScale.x, nearestPoint.x);
+        int minGridY = GetMaxGridSize(-1, transform.localScale.y, nearestPoint.y);
+        int minGridZ = GetMaxGridSize(-1, transform.localScale.z, nearestPoint.z);
 
         int gridMaxSize = DrawGrid.maxPoints - 1;
 
@@ -89,5 +89,51 @@ public class TriggerColisions : MonoBehaviour
                 }
             }
         }
+    }
+
+    bool PointPlaneCollision(MrPlane plane, Line line, out Vec3 point) 
+    {
+        point = Vec3.Zero;
+
+        float denom = Vec3.Dot(plane.normal, line.direction);
+        
+        if(Mathf.Abs(denom) > Vec3.epsilon) 
+        {
+            float interpolate = Vec3.Dot((plane.normal * plane.distance - line.origin), plane.normal) / denom;
+
+            if(interpolate >= Vec3.epsilon)
+            {
+                point = line.origin + line.direction * interpolate;
+                
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsCorrectPlane(MrPlane plane, Vec3 point) 
+    {
+        float vertX1 = plane.verA.x;
+        float vertX2 = plane.verB.x;
+        float vertX3 = plane.verC.x;
+
+        float vertY1 = plane.verA.y;
+        float vertY2 = plane.verB.y;
+        float vertY3 = plane.verC.y;
+
+        float vertZ1 = plane.verA.z;
+        float vertZ2 = plane.verB.z;
+        float vertZ3 = plane.verC.z;
+
+        float triangleAreaOrigin = Mathf.Abs((vertX2 - vertX1) * (vertY3 - vertY1) - (vertX3 - vertX1) * (vertY2 - vertY1)); //Area del triangulo.
+
+        //Area de los 3 triangulos hechos con el punto y las esquinas.
+        float triangleArea1 = Mathf.Abs((vertX1 - point.x) * (vertY2 - point.y) - (vertX2 - point.x) * (vertY1 - point.y));
+        float triangleArea2 = Mathf.Abs((vertX2 - point.x) * (vertY3 - point.y) - (vertX3 - point.x) * (vertY2 - point.y));
+        float triangleArea3 = Mathf.Abs((vertX3 - point.x) * (vertY1 - point.y) - (vertX1 - point.x) * (vertY3 - point.y));
+
+        // Si la suma del area de los 3 triangulos es igual a la del original estamos adentro
+        return Math.Abs(triangleArea1 + triangleArea2 + triangleArea3 - triangleAreaOrigin) < Vec3.epsilon;
     }
 }

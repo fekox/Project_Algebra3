@@ -15,6 +15,10 @@ public class Activity_Planes
     {
         #region Variables
         private Vec3 var_Normal;
+        
+        public Vec3 verA;
+        public Vec3 verB;
+        public Vec3 verC;
 
         private float var_Distance;
         #endregion
@@ -52,18 +56,30 @@ public class Activity_Planes
         {
             var_Normal = Vec3.Normalize(inNormal); //La normal se normaliza.
             var_Distance = 0f - Vec3.Dot(var_Normal, inPoint); //La distancia es igual al producto punto entre la normal y el punto del vec3.
+
+            verA = inPoint;
+            verB = inPoint;
+            verC = inPoint;
         }
 
         public MrPlane(Vec3 inNormal, float d) //Crea un plano en base a una normal y un float.
         {
             var_Normal = Vec3.Normalize(inNormal); //La normal se normaliza.
             var_Distance = d; //La distacia es igual al float (la distancia se mide desde el Plano hasta el origen, a lo largo de la normal del Plano.). 
+
+            verA = inNormal;
+            verB = inNormal;
+            verC = inNormal;
         }
 
         public MrPlane(Vec3 a, Vec3 b, Vec3 c) //Crea un plano en base a 3 vec3.
         {
             var_Normal = Vec3.Normalize(Vec3.Cross(b - a, c - a)); //La normal es igual al producto cruz de los 3 vectores normalizado.
             var_Distance = 0f - Vec3.Dot(var_Normal, a); //La distancia es igual al producto punto de la normal y a.
+
+            verA = a;
+            verB = b;
+            verC = c;
         }
         #endregion
 
