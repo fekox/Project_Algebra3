@@ -10,9 +10,9 @@ public class DrawGrid : MonoBehaviour
     
     [SerializeField] private float delta = 0.2f; //Distancia de los puntos dentro de la grilla.
     
-    private const int maxPoints = 10; //Tamaño maximo de la grilla.
+    public static int maxPoints = 10; //Tamaño maximo de la grilla.
 
-    public Vec3[,,] grid = new Vec3[maxPoints, maxPoints, maxPoints]; //Crea la grilla.
+    public static Vec3[,,] grid = new Vec3[maxPoints, maxPoints, maxPoints]; //Crea la grilla.
 
     public bool drawGrid = true; //Booleano que activa o deactiva la grilla.
 

@@ -4,6 +4,7 @@ using UnityEngine;
 using CustomMath;
 using static Activity_Planes;
 using System.Security.Cryptography;
+using System;
 
 public class TriggerColisions : MonoBehaviour
 {
@@ -51,5 +52,42 @@ public class TriggerColisions : MonoBehaviour
         }
     }
 
-    
+    private int GetMaxGridSize(int num, float scale, float nearestPoint) 
+    {
+        return (int)(nearestPoint) + (3 + (int)scale - 1) * num;
+    }
+
+    private void CheckPoints() //Chequea todos los puntos de la grilla.
+    {
+        checkPoints.Clear();
+
+        int maxGridX = GetMaxGridSize((int)nearestPoint.x, transform.localScale.x, 1);
+        int maxGridY = GetMaxGridSize((int)nearestPoint.y, transform.localScale.y, 1);
+        int maxGridZ = GetMaxGridSize((int)nearestPoint.z, transform.localScale.z, 1);
+
+        int minGridX = GetMaxGridSize((int)nearestPoint.x, transform.localScale.x, -1);
+        int minGridY = GetMaxGridSize((int)nearestPoint.y, transform.localScale.y, -1);
+        int minGridZ = GetMaxGridSize((int)nearestPoint.z, transform.localScale.z, -1);
+
+        int gridMaxSize = DrawGrid.maxPoints - 1;
+
+        maxGridX = Mathf.Clamp(maxGridX, 0, gridMaxSize);
+        maxGridY = Mathf.Clamp(maxGridY, 0, gridMaxSize);
+        maxGridZ = Mathf.Clamp(maxGridZ, 0, gridMaxSize);
+
+        minGridX = Mathf.Clamp(minGridX, 0, gridMaxSize);
+        minGridY = Mathf.Clamp(minGridY, 0, gridMaxSize);
+        minGridZ = Mathf.Clamp(minGridZ, 0, gridMaxSize);
+
+        for (int i = minGridX; i < maxGridX; i++)
+        {
+            for (int j = minGridY; j < maxGridY; j++)
+            {
+                for (int k = minGridZ; k < maxGridZ; k++)
+                {
+                    checkPoints.Add(DrawGrid.grid[i, j, k]);
+                }
+            }
+        }
+    }
 }
