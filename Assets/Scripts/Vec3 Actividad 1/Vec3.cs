@@ -140,7 +140,7 @@ namespace CustomMath
         {
             //https://docs.unity3d.com/ScriptReference/Vector3.Angle.html
 
-            return Mathf.Acos(Mathf.Clamp(Dot(from.normalized, to.normalized), -1f, 1f)) * 180 / MathF.PI;
+            return Mathf.Acos(Mathf.Clamp(Dot(from.normalized, to.normalized), -1f, 1f)) * 180 / MathF.PI; //El clamp no es necesario.
         }
         public static Vec3 ClampMagnitude(Vec3 vector, float maxLength) //Devuelve una copia del vector con su magnitud sujeta a maxima longitud.
         {

@@ -19,7 +19,7 @@ public class EjerciciosVector3_8 : MonoBehaviour
 
     private void Start()
     {
-        VectorC = (VectorA + VectorB).normalized * Vec3.Distance(VectorA, VectorB);
+        VectorC = (VectorA + VectorB).normalized * Vec3.Distance(VectorA, VectorB); //No funca en grandes distancias negativas.
     }
 
     void Update()

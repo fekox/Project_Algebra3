@@ -75,7 +75,7 @@ public class Activity_Planes
         public MrPlane(Vec3 a, Vec3 b, Vec3 c) //Crea un plano en base a 3 vec3.
         {
             var_Normal = Vec3.Normalize(Vec3.Cross(b - a, c - a)); //La normal es igual al producto cruz de los 3 vectores normalizado.
-            var_Distance = 0f - Vec3.Dot(var_Normal, a); //La distancia es igual al producto punto de la normal y a.
+            var_Distance = -Vec3.Dot(var_Normal, a); //La distancia es igual al producto punto de la normal y a.
 
             verA = a;
             verB = b;
