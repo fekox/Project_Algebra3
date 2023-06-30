@@ -162,12 +162,6 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot(MrQuaternion a, MrQuaternion b)
-    {
-        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;//Return dot product by two quaternions.
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Angle(MrQuaternion a, MrQuaternion b) //Devuelve el angulo entre dos Quaternions.
     {
         if (a.magnitude == 0 || b.magnitude == 0)
@@ -211,6 +205,43 @@ public struct MrQuaternion
         q.w = (float)System.Math.Cos(angle / 2); //Calculo de la parte real.
 
         return Normalize(q); //Devuelve el quaternion normalizado.
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Dot(MrQuaternion a, MrQuaternion b)
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;//Return dot product by two quaternions.
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static MrQuaternion Euler(float x, float y, float z) //Retorna un quaternion con sus coordenadas x, y, z rotadas.
+    {
+        float cos;
+        float sin;
+        MrQuaternion qx, qy, qz;
+        MrQuaternion q = identity;
+
+        cos = Mathf.Cos(Mathf.Deg2Rad * x * 0.5f); //Para calcular la parte real de la coordenada x.
+        sin = Mathf.Sin(Mathf.Deg2Rad * x * 0.5f); //Para calcular la parte imaginaria de la coordenada x.
+        qx = new MrQuaternion(sin, 0f, 0f, cos);
+
+        cos = Mathf.Cos(Mathf.Deg2Rad * y * 0.5f); //Para calcular la parte real de la coordenada y.
+        sin = Mathf.Sin(Mathf.Deg2Rad * y * 0.5f); //Para calcular la parte imaginaria de la coordenada y.
+        qy = new MrQuaternion(0f, sin, 0f, cos);
+
+        cos = Mathf.Cos(Mathf.Deg2Rad * z * 0.5f); //Para calcular la parte real de la coordenada z.
+        sin = Mathf.Sin(Mathf.Deg2Rad * z * 0.5f); //Para calcular la parte imaginaria de la coordenada z.
+        qz = new MrQuaternion(0f, 0f, sin, cos);
+
+        q = qx * qy * qz;
+
+        return q;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static MrQuaternion Euler(Vec3 euler) //Lo que el de arriba pero con un Vec3.
+    {
+        return Euler(euler.x, euler.y, euler.z);
     }
 
     #endregion
