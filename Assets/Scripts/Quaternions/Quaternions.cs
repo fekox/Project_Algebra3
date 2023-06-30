@@ -9,6 +9,8 @@ using UnityEngine;
 using CustomMath;
 using Unity.VisualScripting;
 using System.Security.Principal;
+using System.Numerics;
+using UnityEngine.UIElements;
 
 UnityEngine.Quaternion
 
@@ -94,12 +96,30 @@ public struct MrQuaternion
         }
     }
 
+    public Vec3 eulerAngles //Falta completar.
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set 
+        {
+        
+        }
+    }
+
     public MrQuaternion normalized //Returns a quaternion normalizes.
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             return Normalize(this);
+        }
+    }
+
+    public float magnitude //Returns the magnitude.
+    {
+        get 
+        {
+            return Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2) + Mathf.Pow(w, 2)); //Root of the sum of the square of each component.
+                                                                                                      //Raíz de la suma del cuadrado de cada componente.
         }
     }
 
@@ -136,9 +156,37 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Normalize() //Returns a quaternion normalizes.
+    {
+        this = Normalize(this);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Dot(MrQuaternion a, MrQuaternion b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;//Return dot product by two quaternions.
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Angle(MrQuaternion a, MrQuaternion b) //Devuelve el angulo entre dos Quaternions.
+    {
+        if (a.magnitude == 0 || b.magnitude == 0)
+        {               
+            return 0; //If the magnitude of both gives 0 return 0.
+                      //Si la magnitud de ambos da 0 retorno 0.
+        }
+
+        return (float)((double)Mathf.Acos(Mathf.Abs(Dot(a, b)) * Mathf.Rad2Deg / (a.magnitude * b.magnitude)));//Pasa el resultado a grados y lo returnea.
+    }
+
+    public static MrQuaternion AngleAxis(float angle, Vec3 axis) //Falta completar.
+    {
+        return new MrQuaternion();
+    }
+
+    public static MrQuaternion AxisAngle(Vec3 axis, float angle) //Falta completar.
+    {
+        return new MrQuaternion();
     }
 
     #endregion
