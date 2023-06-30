@@ -179,14 +179,38 @@ public struct MrQuaternion
         return (float)((double)Mathf.Acos(Mathf.Abs(Dot(a, b)) * Mathf.Rad2Deg / (a.magnitude * b.magnitude)));//Pasa el resultado a grados y lo returnea.
     }
 
-    public static MrQuaternion AngleAxis(float angle, Vec3 axis) //Falta completar.
+    public static MrQuaternion AngleAxis(float angle, Vec3 axis) //Genera una rotacion en el quaternion usando radianes.
     {
-        return new MrQuaternion();
+        MrQuaternion q = identity;
+
+        axis.Normalize();
+
+        axis *= (float)System.Math.Sin((angle / 2) * Mathf.Rad2Deg); //Calculo de la parte imaginaria.
+
+        q.x = axis.x;
+        q.y = axis.y;
+        q.z = axis.z;
+
+        q.w = (float)System.Math.Cos((angle / 2) * Mathf.Rad2Deg); //Calculo de la parte real.
+
+        return Normalize(q); //Devuelve el quaternion normalizado.
     }
 
-    public static MrQuaternion AxisAngle(Vec3 axis, float angle) //Falta completar.
+    public static MrQuaternion AxisAngle(Vec3 axis, float angle) //Genera una rotacion en el quaternion usando grados.
     {
-        return new MrQuaternion();
+        MrQuaternion q = identity;
+
+        axis.Normalize();
+
+        axis *= (float)System.Math.Sin(angle / 2); //Calculo de la parte imaginaria.
+
+        q.x = axis.x;
+        q.y = axis.y;
+        q.z = axis.z;
+
+        q.w = (float)System.Math.Cos(angle / 2); //Calculo de la parte real.
+
+        return Normalize(q); //Devuelve el quaternion normalizado.
     }
 
     #endregion
