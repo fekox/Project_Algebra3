@@ -13,7 +13,7 @@ using System.Numerics;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
 
-UnityEngine.Quaternion
+UnityEngine.Quaternion.SlerpUnclamped
 
 Quaternion q;
 
@@ -345,6 +345,64 @@ public struct MrQuaternion
 
         return quaternion;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static MrQuaternion RotateTowards(MrQuaternion from, MrQuaternion to, float maxDegreesDelta) 
+    {
+        float num = Angle(from, to); //Es mover del uno al otro, la cantidad de grados especificada.
+        
+        if (num == 0f)
+        {
+            return to;
+        }
+
+        return SlerpUnclamped(from, to, Mathf.Min(1f, maxDegreesDelta / num));
+    }
+
+    public static MrQuaternion Slerp(MrQuaternion a, MrQuaternion b, float t) 
+    {
+        if(t < 0f) 
+        {
+            t = 0f;
+        }
+
+        if(t > 1f) 
+        {
+            t = 1f;
+        }
+
+        return SlerpUnclamped(a, b, t);
+    }
+
+    public static MrQuaternion SlerpUnclamped(MrQuaternion a, MrQuaternion b, float t)
+    {//En este caso, si time no está en el rango 0-1, va a pasarse, en la misma linea (formada por a y b).
+        MrQuaternion ret = identity;
+        float dot = Dot(a, b);
+
+        if (dot < 0)//Verifica hacia donde tiene que ir
+        {
+            dot = -dot;
+            b = -b;
+            b.w = -b.w;
+        }
+        float t1, t2;
+        if (dot < 0.95)
+        {
+            float angle = Mathf.Acos(dot);
+            float sinAgle = Mathf.Sin(angle);
+            float inverse = 1 / sinAgle;
+            t1 = Mathf.Sin((1 - t) * angle) * inverse;
+            t2 = Mathf.Sin(t * angle) * inverse;
+            ret = new MrQuaternion(a.x * t1 + b.x * t2, a.y * t1 + b.y * t2, a.z * t1 + a.z * t2, a.w * t1 + b.w * t2);
+        }
+        else
+        {
+            ret = Lerp(a, b, t);
+        }
+        return ret;
+    }
+
+
     #endregion
 
 
