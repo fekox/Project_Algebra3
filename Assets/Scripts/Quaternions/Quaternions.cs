@@ -11,6 +11,7 @@ using Unity.VisualScripting;
 using System.Security.Principal;
 using System.Numerics;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 UnityEngine.Quaternion
 
@@ -175,36 +176,14 @@ public struct MrQuaternion
 
     public static MrQuaternion AngleAxis(float angle, Vec3 axis) //Genera una rotacion en el quaternion usando radianes.
     {
-        MrQuaternion q = identity;
-
         axis.Normalize();
-
-        axis *= (float)System.Math.Sin((angle / 2) * Mathf.Rad2Deg); //Calculo de la parte imaginaria.
-
-        q.x = axis.x;
-        q.y = axis.y;
-        q.z = axis.z;
-
-        q.w = (float)System.Math.Cos((angle / 2) * Mathf.Rad2Deg); //Calculo de la parte real.
-
-        return Normalize(q); //Devuelve el quaternion normalizado.
+        axis *= Mathf.Sin(angle * Mathf.Deg2Rad * 0.5f);
+        return new MrQuaternion(axis.x, axis.y, axis.z, Mathf.Cos(angle * Mathf.Deg2Rad * 0.5f));
     }
 
     public static MrQuaternion AxisAngle(Vec3 axis, float angle) //Genera una rotacion en el quaternion usando grados.
     {
-        MrQuaternion q = identity;
-
-        axis.Normalize();
-
-        axis *= (float)System.Math.Sin(angle / 2); //Calculo de la parte imaginaria.
-
-        q.x = axis.x;
-        q.y = axis.y;
-        q.z = axis.z;
-
-        q.w = (float)System.Math.Cos(angle / 2); //Calculo de la parte real.
-
-        return Normalize(q); //Devuelve el quaternion normalizado.
+        return AngleAxis(Mathf.Rad2Deg * angle, axis); 
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -244,6 +223,128 @@ public struct MrQuaternion
         return Euler(euler.x, euler.y, euler.z);
     }
 
+    public static MrQuaternion FromToRotation(Vec3 fromDirection, Vec3 toDirection) //Devuelve una rotación que rota de fromDirection a toDirection.
+    {
+        Vec3 axis = Vec3.Cross(fromDirection, toDirection);
+        float angle = Vec3.Angle(fromDirection, toDirection);
+        return AngleAxis(angle, axis.normalized);
+    }
+
+    public static MrQuaternion Inverse(MrQuaternion rotation) //Devuelve el quaternion con la rotacion invertida.
+    {
+        return new MrQuaternion(-rotation.x, -rotation.y, -rotation.z, rotation.w);
+    }
+
+    public static MrQuaternion Lerp(MrQuaternion a, MrQuaternion b, float time) //Interpola desde A a B.
+    {
+        if (time < 0f) 
+        {
+            time = 0f;
+        }
+
+        if (time > 1f) 
+        {
+            time = 1f;
+        }
+
+        return LerpUnclamped(a, b, time); //Time va a ir desde 0 a 1. Siendo 0 la posicion de A y 1 la posicion de B.
+    }
+
+    public static MrQuaternion LerpUnclamped(MrQuaternion a, MrQuaternion b, float time) //Interpola entre las rotaciones “a” y “b” según la
+                                                                                         //variable “t” que no va a estar clampeada (valga
+                                                                                         //laredundancia) y normaliza el resultado.
+
+    {
+        MrQuaternion result = identity;
+
+        float timeLeft = 1f - time;
+
+        //Si el producto punto es mayor a 0 para ver cual
+        //es el camino mas corto para lerpear y dependiendo
+        //de eso se hace una suma o una resta para la
+        //fórmula de interpolación lineal de “a” a “b”.
+
+        if (Dot(a, b) >= 0f) 
+        {
+            result.x = (a.x * timeLeft) + (time * b.x);
+            result.y = (a.y * timeLeft) + (time * b.y);
+            result.z = (a.z * timeLeft) + (time * b.z);
+            result.w = (a.w * timeLeft) + (time * b.w);
+        }
+
+        else 
+        {
+            result.x = (a.x * timeLeft) - (time * b.x);
+            result.y = (a.y * timeLeft) - (time * b.y);
+            result.z = (a.z * timeLeft) - (time * b.z);
+            result.w = (a.w * timeLeft) - (time * b.w);
+        }
+
+        result.Normalize();
+
+        return result;
+    }
+
+    public static MrQuaternion LookRotation(Vec3 forward) //Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
+    {
+        return LookRotation(forward, Vec3.Up);
+    }
+
+    public static MrQuaternion LookRotation(Vec3 forward, Vec3 up) //Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
+    {
+        forward = Vec3.Normalize(forward);
+        Vec3 right = Vec3.Normalize(Vec3.Cross(up, forward));
+        up = Vec3.Cross(forward, right);
+
+        float m00 = right.x; float m01 = right.y; float m02 = right.z;
+        float m10 = up.x; float m11 = up.y; float m12 = up.z;
+        float m20 = forward.x; float m21 = forward.y; float m22 = forward.z;
+
+        float diagonals = m00 + m11 + m22;
+        var quaternion = new MrQuaternion();
+        
+        if (diagonals > 0f)
+        {
+            float num = Mathf.Sqrt(diagonals + 1f);
+            quaternion.w = num * 0.5f;
+            num = 0.5f / num;
+            quaternion.x = (m12 - m21) * num;
+            quaternion.y = (m20 - m02) * num;
+            quaternion.z = (m01 - m10) * num;
+            return quaternion;
+        }
+        
+        if (m00 >= m11 && m00 >= m22)
+        {
+            float num = Mathf.Sqrt(1f + m00 - m11 - m22);
+            float num4 = 0.5f / num;
+            quaternion.x = 0.5f * num;
+            quaternion.y = (m01 + m10) * num4;
+            quaternion.z = (m02 + m20) * num4;
+            quaternion.w = (m12 - m21) * num4;
+            return quaternion;
+        }
+        
+        if (m11 > m22)
+        {
+            float num = Mathf.Sqrt(1f + m11 - m00 - m22);
+            float num3 = 0.5f / num;
+            quaternion.x = (m10 + m01) * num3;
+            quaternion.y = 0.5f * num;
+            quaternion.z = (m21 + m12) * num3;
+            quaternion.w = (m20 - m02) * num3;
+            return quaternion;
+        }
+
+        float num5 = Mathf.Sqrt(1f + m22 - m00 - m11);
+        float num2 = 0.5f / num5;
+        quaternion.x = (m20 + m02) * num2;
+        quaternion.y = (m21 + m12) * num2;
+        quaternion.z = 0.5f * num5;
+        quaternion.w = (m01 - m10) * num2;
+
+        return quaternion;
+    }
     #endregion
 
 
