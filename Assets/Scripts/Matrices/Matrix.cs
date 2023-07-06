@@ -9,7 +9,7 @@ using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 using UnityEngine;
 
-UnityEngine.Matrix4x4
+UnityEngine.Matrix4x4.GetPosition
 
 public class Matrix : MonoBehaviour
 {
@@ -292,18 +292,30 @@ public class Matrix : MonoBehaviour
         {
             get 
             { 
-                return Determinat(this); 
+                return Determinant(this); 
+            }
+        }
+        
+        public MrMatrix transpose 
+        {
+            get 
+            {
+                return Transpose(this);
+            }
+        }
+        
+        public MrMatrix inverse 
+        {
+            get 
+            {
+                return Inverse(this);
             }
         }
         #endregion
 
         #region Function
-        public Vector4 GetColumn(int index) 
-        {
-            return new Vector4(this[0, index], this[1, index], this[2, index], this[3, index]);
-        }
 
-        public static float Determinat(MrMatrix matrix)
+        public static float Determinant(MrMatrix matrix)
         {
             return
             matrix[0, 3] * matrix[1, 2] * matrix[2, 1] * matrix[3, 0] - matrix[0, 2] * matrix[1, 3] * matrix[2, 1] * matrix[3, 0] -
@@ -319,6 +331,247 @@ public class Matrix : MonoBehaviour
             matrix[0, 2] * matrix[1, 0] * matrix[2, 1] * matrix[3, 3] - matrix[0, 0] * matrix[1, 2] * matrix[2, 1] * matrix[3, 3] -
             matrix[0, 1] * matrix[1, 0] * matrix[2, 2] * matrix[3, 3] + matrix[0, 0] * matrix[1, 1] * matrix[2, 2] * matrix[3, 3];
         }
+        
+        public static MrMatrix Inverse(MrMatrix matrix) 
+        {
+            float detA = Determinant(matrix); //Debe tener determinante, de otra forma, no es inversible
+            if (detA == 0)
+                return zero;
+
+            MrMatrix aux = new MrMatrix()
+            {
+                //Lo que hace esto, se encarga de sacar el determinante de cada una de esas posiciones
+                //------0---------
+                m00 = matrix.m11 * matrix.m22 * matrix.m33 + matrix.m12 * matrix.m23 * matrix.m31 + matrix.m13 * matrix.m21 * matrix.m32 - matrix.m11 * matrix.m23 * matrix.m32 - matrix.m12 * matrix.m21 * matrix.m33 - matrix.m13 * matrix.m22 * matrix.m31,
+                m01 = matrix.m01 * matrix.m23 * matrix.m32 + matrix.m02 * matrix.m21 * matrix.m33 + matrix.m03 * matrix.m22 * matrix.m31 - matrix.m01 * matrix.m22 * matrix.m33 - matrix.m02 * matrix.m23 * matrix.m31 - matrix.m03 * matrix.m21 * matrix.m32,
+                m02 = matrix.m01 * matrix.m12 * matrix.m33 + matrix.m02 * matrix.m13 * matrix.m32 + matrix.m03 * matrix.m11 * matrix.m32 - matrix.m01 * matrix.m13 * matrix.m32 - matrix.m02 * matrix.m11 * matrix.m33 - matrix.m03 * matrix.m12 * matrix.m31,
+                m03 = matrix.m01 * matrix.m13 * matrix.m22 + matrix.m02 * matrix.m11 * matrix.m23 + matrix.m03 * matrix.m12 * matrix.m21 - matrix.m01 * matrix.m12 * matrix.m23 - matrix.m02 * matrix.m13 * matrix.m21 - matrix.m03 * matrix.m11 * matrix.m22,
+                //-------1--------					     								    
+                m10 = matrix.m10 * matrix.m23 * matrix.m32 + matrix.m12 * matrix.m20 * matrix.m33 + matrix.m13 * matrix.m22 * matrix.m30 - matrix.m10 * matrix.m22 * matrix.m33 - matrix.m12 * matrix.m23 * matrix.m30 - matrix.m13 * matrix.m20 * matrix.m32,
+                m11 = matrix.m00 * matrix.m22 * matrix.m33 + matrix.m02 * matrix.m23 * matrix.m30 + matrix.m03 * matrix.m20 * matrix.m32 - matrix.m00 * matrix.m23 * matrix.m32 - matrix.m02 * matrix.m20 * matrix.m33 - matrix.m03 * matrix.m22 * matrix.m30,
+                m12 = matrix.m00 * matrix.m13 * matrix.m32 + matrix.m02 * matrix.m10 * matrix.m33 + matrix.m03 * matrix.m12 * matrix.m30 - matrix.m00 * matrix.m12 * matrix.m33 - matrix.m02 * matrix.m13 * matrix.m30 - matrix.m03 * matrix.m10 * matrix.m32,
+                m13 = matrix.m00 * matrix.m12 * matrix.m23 + matrix.m02 * matrix.m13 * matrix.m20 + matrix.m03 * matrix.m10 * matrix.m22 - matrix.m00 * matrix.m13 * matrix.m22 - matrix.m02 * matrix.m10 * matrix.m23 - matrix.m03 * matrix.m12 * matrix.m20,
+                //-------2--------					     								    
+                m20 = matrix.m10 * matrix.m21 * matrix.m33 + matrix.m11 * matrix.m23 * matrix.m30 + matrix.m13 * matrix.m20 * matrix.m31 - matrix.m10 * matrix.m23 * matrix.m31 - matrix.m11 * matrix.m20 * matrix.m33 - matrix.m13 * matrix.m31 * matrix.m30,
+                m21 = matrix.m00 * matrix.m23 * matrix.m31 + matrix.m01 * matrix.m20 * matrix.m33 + matrix.m03 * matrix.m21 * matrix.m30 - matrix.m00 * matrix.m21 * matrix.m33 - matrix.m01 * matrix.m23 * matrix.m30 - matrix.m03 * matrix.m20 * matrix.m31,
+                m22 = matrix.m00 * matrix.m11 * matrix.m33 + matrix.m01 * matrix.m13 * matrix.m31 + matrix.m03 * matrix.m10 * matrix.m31 - matrix.m00 * matrix.m13 * matrix.m31 - matrix.m01 * matrix.m10 * matrix.m33 - matrix.m03 * matrix.m11 * matrix.m30,
+                m23 = matrix.m00 * matrix.m13 * matrix.m21 + matrix.m01 * matrix.m10 * matrix.m23 + matrix.m03 * matrix.m11 * matrix.m31 - matrix.m00 * matrix.m11 * matrix.m23 - matrix.m01 * matrix.m13 * matrix.m20 - matrix.m03 * matrix.m10 * matrix.m21,
+                //------3---------					     								    
+                m30 = matrix.m10 * matrix.m22 * matrix.m31 + matrix.m11 * matrix.m20 * matrix.m32 + matrix.m12 * matrix.m21 * matrix.m30 - matrix.m00 * matrix.m21 * matrix.m32 - matrix.m11 * matrix.m22 * matrix.m30 - matrix.m12 * matrix.m20 * matrix.m31,
+                m31 = matrix.m00 * matrix.m21 * matrix.m32 + matrix.m01 * matrix.m22 * matrix.m30 + matrix.m02 * matrix.m20 * matrix.m31 - matrix.m00 * matrix.m22 * matrix.m31 - matrix.m01 * matrix.m20 * matrix.m32 - matrix.m02 * matrix.m21 * matrix.m30,
+                m32 = matrix.m00 * matrix.m12 * matrix.m31 + matrix.m01 * matrix.m10 * matrix.m32 + matrix.m02 * matrix.m11 * matrix.m30 - matrix.m00 * matrix.m11 * matrix.m32 - matrix.m01 * matrix.m12 * matrix.m30 - matrix.m02 * matrix.m10 * matrix.m31,
+                m33 = matrix.m00 * matrix.m11 * matrix.m22 + matrix.m01 * matrix.m12 * matrix.m20 + matrix.m02 * matrix.m10 * matrix.m21 - matrix.m00 * matrix.m12 * matrix.m21 - matrix.m01 * matrix.m10 * matrix.m22 - matrix.m02 * matrix.m11 * matrix.m20
+            };
+
+            MrMatrix ret = new MrMatrix()
+            {
+                m00 = aux.m00 / detA,
+                m01 = aux.m01 / detA,
+                m02 = aux.m02 / detA,
+                m03 = aux.m03 / detA,
+                m10 = aux.m10 / detA,
+                m11 = aux.m11 / detA,
+                m12 = aux.m12 / detA,
+                m13 = aux.m13 / detA,
+                m20 = aux.m20 / detA,
+                m21 = aux.m21 / detA,
+                m22 = aux.m22 / detA,
+                m23 = aux.m23 / detA,
+                m30 = aux.m30 / detA,
+                m31 = aux.m31 / detA,
+                m32 = aux.m32 / detA,
+                m33 = aux.m33 / detA
+
+            };
+            return ret;
+        }
+
+        public static MrMatrix Rotate(MrQuaternion quaternion) 
+        {
+            double num1 = quaternion.x * 2f;
+            double num2 = quaternion.y * 2f;
+            double num3 = quaternion.z * 2f;
+
+            double num4 = quaternion.x * num1;
+            double num5 = quaternion.y * num2;
+            double num6 = quaternion.z * num3;
+            double num7 = quaternion.x * num2;
+            double num8 = quaternion.x * num3;
+            double num9 = quaternion.y * num3;
+
+            double num10 = quaternion.w * num1;
+            double num11 = quaternion.w * num2;
+            double num12 = quaternion.w * num3;
+            
+            MrMatrix matrix;
+            matrix.m00 = (float)(1.0 - num5 + num6);
+            matrix.m10 = (float)(num7 + num12);
+            matrix.m20 = (float)(num8 - num11);
+            matrix.m30 = 0.0f;
+            matrix.m01 = (float)(num7 - num12);
+            matrix.m11 = (float)(1.0 - num4 + num6);
+            matrix.m21 = (float)(num9 + num10);
+            matrix.m31 = 0.0f;
+            matrix.m02 = (float)(num8 + num11);
+            matrix.m12 = (float)(num9 - num10);
+            matrix.m22 = (float)(1.0 - num4 + num5);
+            matrix.m32 = 0.0f;
+            matrix.m03 = 0.0f;
+            matrix.m13 = 0.0f;
+            matrix.m23 = 0.0f;
+            matrix.m33 = 1f;
+            
+            return matrix;
+        }
+
+        public static MrMatrix Scale(Vec3 vector3) 
+        {
+            MrMatrix matrix;
+
+            matrix.m00 = vector3.x;
+            matrix.m01 = 0.0f;
+            matrix.m02 = 0.0f;
+            matrix.m03 = 0.0f;
+            matrix.m10 = 0.0f;
+
+            matrix.m11 = vector3.y;
+            matrix.m12 = 0.0f;
+            matrix.m13 = 0.0f;
+            matrix.m20 = 0.0f;
+            matrix.m21 = 0.0f;
+
+            matrix.m22 = vector3.z;
+            matrix.m23 = 0.0f;
+            matrix.m30 = 0.0f;
+            matrix.m31 = 0.0f;
+            matrix.m32 = 0.0f;
+            matrix.m33 = 1f;
+
+            return matrix;
+        }
+
+        public static MrMatrix Traslate(Vec3 vector3) 
+        {
+            MrMatrix matrix;
+
+            matrix.m00 = 1f;
+            matrix.m01 = 0.0f;
+            matrix.m02 = 0.0f;
+
+            matrix.m03 = vector3.x;
+            matrix.m10 = 0.0f;
+            matrix.m11 = 1f;
+            matrix.m12 = 0.0f;
+
+            matrix.m13 = vector3.y;
+            matrix.m20 = 0.0f;
+            matrix.m21 = 0.0f;
+            matrix.m22 = 1f;
+
+            matrix.m23 = vector3.z;
+            matrix.m30 = 0.0f;
+            matrix.m31 = 0.0f;
+            matrix.m32 = 0.0f;
+            matrix.m33 = 1f;
+
+            return matrix;
+        }
+
+        public static MrMatrix Transpose(MrMatrix matrix)
+        {
+            return new MrMatrix()
+            {
+                m01 = matrix.m10,
+                m02 = matrix.m20,
+                m03 = matrix.m30,
+                m10 = matrix.m01,
+                m12 = matrix.m21,
+                m13 = matrix.m31,
+                m20 = matrix.m02,
+                m21 = matrix.m12,
+                m23 = matrix.m32,
+                m30 = matrix.m03,
+                m31 = matrix.m13,
+                m32 = matrix.m23,
+            };
+        }
+
+        public static MrMatrix TRS(Vec3 pos, MrQuaternion q, Vec3 s) 
+        {
+            return (Traslate(pos) * Rotate(q) * Scale(s));
+        }
+
+        public Vector4 GetColumn(int index)
+        {
+            return new Vector4(this[0, index], this[1, index], this[2, index], this[3, index]);
+        }
+
+        public Vec3 GetPosition() 
+        {
+            return new Vec3(m03, m13, m23);
+        }
+
+        public Vector4 GetRow(int index) 
+        {
+            switch (index)
+            {
+                case 0:
+                    return new Vector4(m00, m01, m02, m03);
+
+                case 1:
+                    return new Vector4(m10, m11, m12, m13);
+
+                case 2:
+                    return new Vector4(m20, m21, m22, m23);
+
+                case 3:
+                    return new Vector4(m30, m31, m32, m33);
+
+                default:
+                    throw new IndexOutOfRangeException("Index out of Range!");
+            }
+        }
+
+        public Vec3 MultiplyPoint(Vec3 point) 
+        {
+            Vec3 vector3;
+
+            vector3.x = (float)((double)m00 * (double)point.x + (double)m01 * (double)point.y + (double)m02 * (double)point.z) + m03;
+            vector3.y = (float)((double)m10 * (double)point.x + (double)m11 * (double)point.y + (double)m12 * (double)point.z) + m13;
+            vector3.z = (float)((double)m20 * (double)point.x + (double)m21 * (double)point.y + (double)m22 * (double)point.z) + m23;
+
+            float num = 1f / ((float)((double)m30 * (double)point.x + (double)m31 * (double)point.y + (double)m32 * (double)point.z) + m33);
+
+            vector3.x *= num;
+            vector3.y *= num;
+            vector3.z *= num;
+
+            return vector3;
+        }
+
+        public Vec3 MultiplyPoint3x4(Vec3 point) 
+        {
+            Vec3 vector3;
+
+            vector3.x = (float)((double)m00 * (double)point.x + (double)m01 * (double)point.y + (double)m02 * (double)point.z) + m03;
+            vector3.y = (float)((double)m10 * (double)point.x + (double)m11 * (double)point.y + (double)m12 * (double)point.z) + m13;
+            vector3.z = (float)((double)m20 * (double)point.x + (double)m21 * (double)point.y + (double)m22 * (double)point.z) + m23;
+
+            return vector3;
+        }
+
+        public Vec3 MultiplyPointVector(Vec3 vector) 
+        {
+            Vec3 vector3; //No se tienen en cuenta ni la 4ta fila ni la 4ta columna
+
+            vector3.x = (float)((double)m00 * (double)vector.x + (double)m01 * (double)vector.y + (double)m02 * (double)vector.z);
+            vector3.y = (float)((double)m10 * (double)vector.x + (double)m11 * (double)vector.y + (double)m12 * (double)vector.z);
+            vector3.z = (float)((double)m20 * (double)vector.x + (double)m21 * (double)vector.y + (double)m22 * (double)vector.z);
+
+            return vector3;
+        }
+
+
         #endregion
 
 
