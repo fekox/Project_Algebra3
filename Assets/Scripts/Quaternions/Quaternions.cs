@@ -13,7 +13,7 @@ using System.Numerics;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
 
-UnityEngine.Quaternion.SlerpUnclamped
+UnityEngine.Quaternion
 
 Quaternion q;
 
@@ -22,10 +22,10 @@ public struct MrQuaternion
     #region Variables
     public const float kEpsilon = 1E-06f;
 
-    public float x; //X component of Quaternions. Don't touch if you don't understand X_X.
-    public float y; //Y component of Quaternions. Don't touch if you don't understand X_X.
-    public float z; //Z component of Quaternions. Don't touch if you don't understand X_X.
-    public float w; //W component of Quaternions. Don't touch if you don't understand X_X.
+    public float x; //X component of Quaternions. Don't touch if you don't understand Xx.
+    public float y; //Y component of Quaternions. Don't touch if you don't understand Xx.
+    public float z; //Z component of Quaternions. Don't touch if you don't understand Xx.
+    public float w; //W component of Quaternions. Don't touch if you don't understand Xx.
 
     #endregion
 
@@ -402,10 +402,103 @@ public struct MrQuaternion
         return ret;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Set(float newX, float newY, float newZ, float newW)
+    {
+        x = newX;
+        y = newY;
+        z = newZ;
+        w = newW;
+    }
 
+    public void SetFromToRotation(Vec3 fromDirection, Vec3 toDirection)
+    {
+        this = FromToRotation(fromDirection, toDirection);
+    }
+
+    public void SetLookRotation(Vec3 view)
+    {
+        this = LookRotation(view);
+    }
+
+    public void SetLookRotation(Vec3 view, Vec3 up)
+    {
+        this = LookRotation(view, up);
+    }
+
+    public void ToAngleAxis(out float angle, out Vec3 axis)
+    {
+        ToAxisAngle(out axis, out angle);
+        angle *= Mathf.Rad2Deg;
+    }
+
+    public void ToAxisAngle(out Vec3 axis, out float angle)
+    {
+        Normalize();
+
+        angle = 2.0f * Mathf.Acos(w);
+
+        float mag = Mathf.Sqrt(1.0f - w * w);
+
+        if (mag > 0.0001f)
+        {
+            axis = new Vec3(x, y, z) / mag;
+        }
+
+        else
+        {
+            // si el angulo es 0 se pasa un eje arbitrario
+            axis = new Vec3(1, 0, 0);
+        }
+    }
+
+    public override string ToString()
+    {
+        return string.Format("({0:F1}, {1:F1}, {2:F1}, {3:F1})", x, y, z, w);
+    }
+
+    public string ToString(string format)
+    {
+        return string.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
+    }
     #endregion
 
+    #region Operators
+    public static MrQuaternion operator +(MrQuaternion v1, MrQuaternion v2)//suma componente a componente
+    {
+        return new MrQuaternion(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w);
+    }
+    public static MrQuaternion operator -(MrQuaternion v1, MrQuaternion v2)//Resta componente a componente
+    {
+        return new MrQuaternion(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w);
+    }
+    public static MrQuaternion operator -(MrQuaternion v1)//Quaternion dando vuelta los signos de sus componentes
+    {
+        return new MrQuaternion(-v1.x, -v1.y, -v1.z, v1.w);
+    }
 
+    public static MrQuaternion operator *(MrQuaternion lhs, MrQuaternion rhs)
+    {
+        return new MrQuaternion(
+            lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
+            lhs.w * rhs.y + lhs.y * rhs.w + lhs.z * rhs.x - lhs.x * rhs.z,
+            lhs.w * rhs.z + lhs.z * rhs.w + lhs.x * rhs.y - lhs.y * rhs.x,
+            lhs.w * rhs.w - lhs.x * rhs.x - lhs.y * rhs.y - lhs.z * rhs.z);
+    }
 
+    public static MrQuaternion operator *(MrQuaternion v1, float v2)//Multiplicación componente a componente
+    {
+        return new MrQuaternion(v1.x * v2, v1.y * v2, v1.z * v2, v1.w * v2);
+    }
 
+    public static bool operator ==(MrQuaternion v1, MrQuaternion v2)//Cada componente igual a la del otro quaternion
+    {
+        return (v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w);
+    }
+
+    public static bool operator !=(MrQuaternion v1, MrQuaternion v2)//Al menos una componente distinta respecto del otro quaternion
+    {
+        return (v1.x != v2.x || v1.y != v2.y || v1.z != v2.z || v1.w != v2.w);
+    }
+    #endregion
 }
