@@ -13,10 +13,6 @@ using System.Numerics;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
 
-UnityEngine.Quaternion
-
-Quaternion q;
-
 public struct MrQuaternion 
 {
     #region Variables
