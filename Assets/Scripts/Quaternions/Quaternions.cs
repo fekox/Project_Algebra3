@@ -12,22 +12,24 @@ using System.Security.Principal;
 using System.Numerics;
 using UnityEngine.UIElements;
 using UnityEngine.UI;
+using System.Data;
+using Unity.VisualScripting.Dependencies.Sqlite;
 
 public struct MrQuaternion 
 {
     #region Variables
     public const float kEpsilon = 1E-06f;
 
-    public float x; //X component of Quaternions. Don't touch if you don't understand Xx.
-    public float y; //Y component of Quaternions. Don't touch if you don't understand Xx.
-    public float z; //Z component of Quaternions. Don't touch if you don't understand Xx.
-    public float w; //W component of Quaternions. Don't touch if you don't understand Xx.
+    public float x; //Componente X, no se toca si no sabes.
+    public float y; //Componente Y, no se toca si no sabes.
+    public float z; //Componente Z, no se toca si na sabes.
+    public float w; //Componente W, no se toca si no sabes.
 
     #endregion
 
     #region Contructs
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public MrQuaternion(float x, float y, float z, float w) //Constructs a quaternion from the specified components.
+    public MrQuaternion(float x, float y, float z, float w) //Crea un quaternion con un float para cada componente.
     {
         this.x = x;
         this.y = y;
@@ -36,7 +38,7 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public MrQuaternion(Vec3 vec3Part, float rotPart) //Creates a quaternion from the specified vector and rotation parts.
+    public MrQuaternion(Vec3 vec3Part, float rotPart) //Crea un quaternion con un vector3 para los componentes X, Y, Z, y un float para el componente W.
     {
         this.x = vec3Part.x;
         this.y = vec3Part.y;
@@ -47,9 +49,8 @@ public struct MrQuaternion
 
     #region Properties
 
-    public float this[int index] //Access the x, y, z, w components using [0], [1], [2], [3] respectively.
-    {                            //Example: ( p[3] = 0.5f; the same as p.w = 0.5 ).
-
+    public float this[int index] //Accede a los componentes del Quaternion a traves de indicies en un array.
+    { 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
@@ -85,24 +86,30 @@ public struct MrQuaternion
         }
     }
 
-    public static MrQuaternion identity //Returns a quaternion that corresponds to ¨not rotated¨.
-    {                                   //The object is perfectly aligned with the world or parent axes.
+    public static MrQuaternion identity //Devuelve un quaternion ¨not rotated¨, no rotado.
+    {                                   //El objecto esta perfectamente alineado con el mundo o los ejes principales.
         get 
         { 
-            return new MrQuaternion(0f, 0f, 0f, 1f); 
+            return new MrQuaternion(0f, 0f, 0f, 1f);
         }
     }
 
-    public Vec3 eulerAngles //Falta completar.
+    public Vec3 eulerAngles //Devuelve o establece la representación del ángulo de Euler de la rotación.
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set 
+        get
         {
+            return FromQuaternionToEuler(this);
+        }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set
+        {
+            this = FromEulerToQuaternion(value);
         }
     }
 
-    public MrQuaternion normalized //Returns a quaternion normalizes.
+    public MrQuaternion normalized //Devuelve un quaternion normalizes.
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -111,24 +118,15 @@ public struct MrQuaternion
         }
     }
 
-    public float magnitude //Returns the magnitude.
+    public float magnitude //Devuelve la magnitud.
     {
         get 
         {
-            return Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2) + Mathf.Pow(w, 2)); //Root of the sum of the square of each component.
-                                                                                                      //Raíz de la suma del cuadrado de cada componente.
+            return Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2) + Mathf.Pow(w, 2)); //Raíz de la suma del cuadrado de cada componente.
         }
     }
 
-    public bool isIdentity //Returns true if whether the given quaternion is equals to the quaternion identity.
-    {
-        get 
-        {
-            return x == 0f && y == 0f && z == 0f && w == 1f;
-        }
-    }
-
-    public MrQuaternion zero //Return a quaternion whose values are (0, 0, 0, 0).
+    public MrQuaternion zero //Devuelve un quaternion cuyos valores son (0, 0, 0, 0).
     { 
         get 
         {
@@ -139,57 +137,131 @@ public struct MrQuaternion
 
     #region Functions
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static MrQuaternion Normalize(MrQuaternion q)
+    public static Vec3 FromQuaternionToEuler(MrQuaternion rotation)
     {
-        float num = Mathf.Sqrt(Dot(q, q)); //Obtain the result of the square root of the dot product of the quaternion.
-        
-        if (num < Mathf.Epsilon) //If the result is less than epsilon. (A tiny floating point value).
+        float sqw = rotation.w * rotation.w;
+        float sqx = rotation.x * rotation.x;
+        float sqy = rotation.y * rotation.y;
+        float sqz = rotation.z * rotation.z;
+        float unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+        float test = rotation.x * rotation.w - rotation.y * rotation.z;
+        Vec3 v;
+
+        if (test > 0.4999f * unit)   // singularity at north pole
         {
-            return identity; //Return MrQuaternion(0f, 0f, 0f, 1f). 
+            v.y = 2f * Mathf.Atan2(rotation.y, rotation.x);
+            v.x = Mathf.PI / 2;
+            v.z = 0;
+            return NormalizeAngles(v * Mathf.Rad2Deg);
+        }
+        if (test < -0.4999f * unit)  // singularity at south pole
+        {
+            v.y = -2f * Mathf.Atan2(rotation.y, rotation.x);
+            v.x = -Mathf.PI / 2;
+            v.z = 0;
+            return NormalizeAngles(v * Mathf.Rad2Deg);
         }
 
-        return new MrQuaternion(q.x / num, q.y / num, q.z / num, q.w / num); //If not, a quaternion divided by the previously obtained result is returned.
+        MrQuaternion q = new MrQuaternion(rotation.w, rotation.z, rotation.x, rotation.y);
+        v.y = Mathf.Atan2(2f * q.x * q.w + 2f * q.y * q.z, 1 - 2f * (q.z * q.z + q.w * q.w));     // Yaw
+        v.x = Mathf.Asin(2f * (q.x * q.z - q.w * q.y));                                           // Pitch
+        v.z = Mathf.Atan2(2f * q.x * q.y + 2f * q.z * q.w, 1 - 2f * (q.y * q.y + q.z * q.z));      // Roll
+        return NormalizeAngles(v * Mathf.Rad2Deg);
+    }
+
+    static MrQuaternion FromEulerToQuaternion(Vec3 euler)
+    {
+        float sinAngle = 0.0f;
+        float cosAngle = 0.0f;
+
+        MrQuaternion qx = identity;
+        MrQuaternion qy = identity;
+        MrQuaternion qz = identity;
+        MrQuaternion r = identity;
+
+        sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.z * 0.5f);
+        cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.z * 0.5f);
+        qz.Set(0, 0, sinAngle, cosAngle);
+
+        sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.x * 0.5f);
+        cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.x * 0.5f);
+        qx.Set(sinAngle, 0, 0, cosAngle);
+
+        sinAngle = Mathf.Sin(Mathf.Deg2Rad * euler.y * 0.5f);
+        cosAngle = Mathf.Cos(Mathf.Deg2Rad * euler.y * 0.5f);
+        qy.Set(0, sinAngle, 0, cosAngle);
+
+        r = qy * qx * qz;
+
+        return r;
+    }
+    private static Vec3 NormalizeAngles(Vec3 angles)//Devuelve los angulos X, Y, Z normalizados.
+    {
+        angles.x = NormalizeAngle(angles.x);
+        angles.y = NormalizeAngle(angles.y);
+        angles.z = NormalizeAngle(angles.z);
+        return angles;
+    }
+
+    private static float NormalizeAngle(float angle)//Devuelve un angulo normalizado.
+    {
+        while (angle > 360)
+            angle -= 360;
+        while (angle < 0)
+            angle += 360;
+        return angle;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Normalize() //Returns a quaternion normalizes.
+    public static MrQuaternion Normalize(MrQuaternion q)
+    {
+        float num = Mathf.Sqrt(Dot(q, q)); //Obtengo el resultado de la raiz cuadrada del producto punto del quaternion.
+        
+        if (num < Mathf.Epsilon) //Si el resultado es menor que epsilon. (Un pequeño valor de punto flotante).
+        {
+            return identity; //Devuelve MrQuaternion(0f, 0f, 0f, 1f). 
+        }
+
+        return new MrQuaternion(q.x / num, q.y / num, q.z / num, q.w / num); //En caso contrario, se devuelve un cuaternión dividido por el resultado obtenido anteriormente.
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Normalize()//Devuelve un quaternion normalizado.
     {
         this = Normalize(this);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Angle(MrQuaternion a, MrQuaternion b) //Devuelve el angulo entre dos Quaternions.
+    public static float Angle(MrQuaternion a, MrQuaternion b)//Devuelve el angulo entre dos Quaternions.
     {
         if (a.magnitude == 0 || b.magnitude == 0)
         {               
-            return 0; //If the magnitude of both gives 0 return 0.
-                      //Si la magnitud de ambos da 0 retorno 0.
+            return 0; //Si la magnitud de ambos da 0 devuelvo 0.
         }
 
         return (float)((double)Mathf.Acos(Mathf.Abs(Dot(a, b)) * Mathf.Rad2Deg / (a.magnitude * b.magnitude)));//Pasa el resultado a grados y lo returnea.
     }
 
-    public static MrQuaternion AngleAxis(float angle, Vec3 axis) //Genera una rotacion en el quaternion usando radianes.
+    public static MrQuaternion AngleAxis(float angle, Vec3 axis)//Genera una rotacion en el quaternion usando radianes.
     {
         axis.Normalize();
         axis *= Mathf.Sin(angle * Mathf.Deg2Rad * 0.5f);
         return new MrQuaternion(axis.x, axis.y, axis.z, Mathf.Cos(angle * Mathf.Deg2Rad * 0.5f));
     }
 
-    public static MrQuaternion AxisAngle(Vec3 axis, float angle) //Genera una rotacion en el quaternion usando grados.
+    public static MrQuaternion AxisAngle(Vec3 axis, float angle)//Genera una rotacion en el quaternion usando grados.
     {
         return AngleAxis(Mathf.Rad2Deg * angle, axis); 
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot(MrQuaternion a, MrQuaternion b)
+    public static float Dot(MrQuaternion a, MrQuaternion b)//Devuelve el producto punto de dos quaternions.
     {
-        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;//Return dot product by two quaternions.
+        return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static MrQuaternion Euler(float x, float y, float z) //Retorna un quaternion con sus coordenadas x, y, z rotadas.
+    public static MrQuaternion Euler(float x, float y, float z)//Retorna un quaternion con sus coordenadas x, y, z rotadas.
     {
         float cos;
         float sin;
@@ -214,24 +286,24 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static MrQuaternion Euler(Vec3 euler) //Lo que el de arriba pero con un Vec3.
+    public static MrQuaternion Euler(Vec3 euler)//Lo que el de arriba pero con un Vec3.
     {
         return Euler(euler.x, euler.y, euler.z);
     }
 
-    public static MrQuaternion FromToRotation(Vec3 fromDirection, Vec3 toDirection) //Devuelve una rotación que rota de fromDirection a toDirection.
+    public static MrQuaternion FromToRotation(Vec3 fromDirection, Vec3 toDirection)//Devuelve una rotación que rota de fromDirection a toDirection.
     {
         Vec3 axis = Vec3.Cross(fromDirection, toDirection);
         float angle = Vec3.Angle(fromDirection, toDirection);
         return AngleAxis(angle, axis.normalized);
     }
 
-    public static MrQuaternion Inverse(MrQuaternion rotation) //Devuelve el quaternion con la rotacion invertida.
+    public static MrQuaternion Inverse(MrQuaternion rotation)//Devuelve el quaternion con la rotacion invertida.
     {
         return new MrQuaternion(-rotation.x, -rotation.y, -rotation.z, rotation.w);
     }
 
-    public static MrQuaternion Lerp(MrQuaternion a, MrQuaternion b, float time) //Interpola desde A a B.
+    public static MrQuaternion Lerp(MrQuaternion a, MrQuaternion b, float time)//Interpola desde A a B.
     {
         if (time < 0f) 
         {
@@ -246,7 +318,7 @@ public struct MrQuaternion
         return LerpUnclamped(a, b, time); //Time va a ir desde 0 a 1. Siendo 0 la posicion de A y 1 la posicion de B.
     }
 
-    public static MrQuaternion LerpUnclamped(MrQuaternion a, MrQuaternion b, float time) //Interpola entre las rotaciones “a” y “b” según la
+    public static MrQuaternion LerpUnclamped(MrQuaternion a, MrQuaternion b, float time)//Interpola entre las rotaciones “a” y “b” según la
                                                                                          //variable “t” que no va a estar clampeada (valga
                                                                                          //laredundancia) y normaliza el resultado.
 
@@ -281,12 +353,12 @@ public struct MrQuaternion
         return result;
     }
 
-    public static MrQuaternion LookRotation(Vec3 forward) //Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
+    public static MrQuaternion LookRotation(Vec3 forward)//Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
     {
         return LookRotation(forward, Vec3.Up);
     }
 
-    public static MrQuaternion LookRotation(Vec3 forward, Vec3 up) //Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
+    public static MrQuaternion LookRotation(Vec3 forward, Vec3 up)//Transforma un vector director en una rotación que tenga su eje z alineado con “forward”.
     {
         forward = Vec3.Normalize(forward);
         Vec3 right = Vec3.Normalize(Vec3.Cross(up, forward));
@@ -343,9 +415,9 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static MrQuaternion RotateTowards(MrQuaternion from, MrQuaternion to, float maxDegreesDelta) 
+    public static MrQuaternion RotateTowards(MrQuaternion from, MrQuaternion to, float maxDegreesDelta)//Es mover de "from" a "to", la cantidad de grados especificada.
     {
-        float num = Angle(from, to); //Es mover del uno al otro, la cantidad de grados especificada.
+        float num = Angle(from, to);
         
         if (num == 0f)
         {
@@ -355,8 +427,8 @@ public struct MrQuaternion
         return SlerpUnclamped(from, to, Mathf.Min(1f, maxDegreesDelta / num));
     }
 
-    public static MrQuaternion Slerp(MrQuaternion a, MrQuaternion b, float t) 
-    {
+    public static MrQuaternion Slerp(MrQuaternion a, MrQuaternion b, float t)//Devuelve un quaternion interpolado entre a y b.
+    {                                                                         //"t" es el ratio de interpolacion.
         if(t < 0f) 
         {
             t = 0f;
@@ -370,9 +442,11 @@ public struct MrQuaternion
         return SlerpUnclamped(a, b, t);
     }
 
-    public static MrQuaternion SlerpUnclamped(MrQuaternion a, MrQuaternion b, float t)
-    {//En este caso, si time no está en el rango 0-1, va a pasarse, en la misma linea (formada por a y b).
+    public static MrQuaternion SlerpUnclamped(MrQuaternion a, MrQuaternion b, float t)//Interpola esfericamente entre a y b por t.
+    {                                                                                 //"t" es el ratio de interpolacion.
+        //En este caso, si time no está en el rango 0-1, va a pasarse, en la misma linea (formada por a y b).
         MrQuaternion ret = identity;
+        
         float dot = Dot(a, b);
 
         if (dot < 0)//Verifica hacia donde tiene que ir
@@ -381,7 +455,9 @@ public struct MrQuaternion
             b = -b;
             b.w = -b.w;
         }
+
         float t1, t2;
+
         if (dot < 0.95)
         {
             float angle = Mathf.Acos(dot);
@@ -391,15 +467,17 @@ public struct MrQuaternion
             t2 = Mathf.Sin(t * angle) * inverse;
             ret = new MrQuaternion(a.x * t1 + b.x * t2, a.y * t1 + b.y * t2, a.z * t1 + a.z * t2, a.w * t1 + b.w * t2);
         }
+
         else
         {
             ret = Lerp(a, b, t);
         }
+
         return ret;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(float newX, float newY, float newZ, float newW)
+    public void Set(float newX, float newY, float newZ, float newW)//Setea los componetes X, Y, Z, W de un cuaternion existente.
     {
         x = newX;
         y = newY;
@@ -407,28 +485,29 @@ public struct MrQuaternion
         w = newW;
     }
 
-    public void SetFromToRotation(Vec3 fromDirection, Vec3 toDirection)
+    public void SetFromToRotation(Vec3 fromDirection, Vec3 toDirection)//Crea una rotacion que gira desde "fromDirection" a "toDirection".
     {
         this = FromToRotation(fromDirection, toDirection);
     }
 
-    public void SetLookRotation(Vec3 view)
+    public void SetLookRotation(Vec3 view)//Crea una rotacion con la direccion hacia delanate seteada.
     {
         this = LookRotation(view);
     }
 
-    public void SetLookRotation(Vec3 view, Vec3 up)
+    public void SetLookRotation(Vec3 view, Vec3 up)//Crea una rotacion con las direcciones hacia delanate y hacia arriba seteadas.
     {
         this = LookRotation(view, up);
     }
 
-    public void ToAngleAxis(out float angle, out Vec3 axis)
+    public void ToAngleAxis(out float angle, out Vec3 axis)//Convierte una rotacion en la representacion de un angulo.
     {
         ToAxisAngle(out axis, out angle);
+
         angle *= Mathf.Rad2Deg;
     }
 
-    public void ToAxisAngle(out Vec3 axis, out float angle)
+    public void ToAxisAngle(out Vec3 axis, out float angle)//Convierte una rotacion en la representacion de un angulo.
     {
         Normalize();
 
@@ -448,32 +527,32 @@ public struct MrQuaternion
         }
     }
 
-    public override string ToString()
+    public override string ToString()//Devuelve los datos del Quaternion en forma de string.
     {
         return string.Format("({0:F1}, {1:F1}, {2:F1}, {3:F1})", x, y, z, w);
     }
 
-    public string ToString(string format)
+    public string ToString(string format)//Devuelve los datos del Quaternion en forma de string.
     {
         return string.Format("({0}, {1}, {2}, {3})", x.ToString(format), y.ToString(format), z.ToString(format), w.ToString(format));
     }
     #endregion
 
     #region Operators
-    public static MrQuaternion operator +(MrQuaternion v1, MrQuaternion v2)//suma componente a componente
+    public static MrQuaternion operator +(MrQuaternion v1, MrQuaternion v2)//Suma componente a componente.
     {
         return new MrQuaternion(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w);
     }
-    public static MrQuaternion operator -(MrQuaternion v1, MrQuaternion v2)//Resta componente a componente
+    public static MrQuaternion operator -(MrQuaternion v1, MrQuaternion v2)//Resta componente a componente.
     {
         return new MrQuaternion(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w);
     }
-    public static MrQuaternion operator -(MrQuaternion v1)//Quaternion dando vuelta los signos de sus componentes
+    public static MrQuaternion operator -(MrQuaternion v1)//Quaternion con sus componentes en negativo.
     {
         return new MrQuaternion(-v1.x, -v1.y, -v1.z, v1.w);
     }
 
-    public static MrQuaternion operator *(MrQuaternion lhs, MrQuaternion rhs)
+    public static MrQuaternion operator *(MrQuaternion lhs, MrQuaternion rhs)//Multiplica los componentes de dos quaterniones.
     {
         return new MrQuaternion(
             lhs.w * rhs.x + lhs.x * rhs.w + lhs.y * rhs.z - lhs.z * rhs.y,
@@ -487,12 +566,12 @@ public struct MrQuaternion
         return new MrQuaternion(v1.x * v2, v1.y * v2, v1.z * v2, v1.w * v2);
     }
 
-    public static bool operator ==(MrQuaternion v1, MrQuaternion v2)//Cada componente igual a la del otro quaternion
+    public static bool operator ==(MrQuaternion v1, MrQuaternion v2)//Devuelve si un quaternion es igual al otro.
     {
         return (v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w);
     }
 
-    public static bool operator !=(MrQuaternion v1, MrQuaternion v2)//Al menos una componente distinta respecto del otro quaternion
+    public static bool operator !=(MrQuaternion v1, MrQuaternion v2)//Devuelve si un quaternion es diferente al otro.
     {
         return (v1.x != v2.x || v1.y != v2.y || v1.z != v2.z || v1.w != v2.w);
     }
