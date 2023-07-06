@@ -237,15 +237,88 @@ public class Matrix : MonoBehaviour
         {
             get
             {
-                MrMatrix m = zero;
-                m.m00 = 1.0f;
-                m.m11 = 1.0f;
-                m.m22 = 1.0f;
-                m.m33 = 1.0f;
-                return m;
+                MrMatrix matrix = zero;
+                matrix.m00 = 1.0f;
+                matrix.m11 = 1.0f;
+                matrix.m22 = 1.0f;
+                matrix.m33 = 1.0f;
+                return matrix;
             }
         }
 
+        public MrQuaternion rotation 
+        {
+            get 
+            {
+                MrMatrix matrix = this;
+
+                MrQuaternion quaternion = new MrQuaternion();
+
+                quaternion.w = Mathf.Sqrt(Mathf.Max(0, 1 + matrix[0, 0] + matrix[1, 1] + matrix[2, 2])) / 2; //Devuelve la raiz de un número que debe ser al menos 0.
+                quaternion.x = Mathf.Sqrt(Mathf.Max(0, 1 + matrix[0, 0] - matrix[1, 1] - matrix[2, 2])) / 2; //Por eso hace un min entre las posiciones de las diagonales.
+                quaternion.y = Mathf.Sqrt(Mathf.Max(0, 1 - matrix[0, 0] + matrix[1, 1] - matrix[2, 2])) / 2;
+                quaternion.z = Mathf.Sqrt(Mathf.Max(0, 1 - matrix[0, 0] - matrix[1, 1] + matrix[2, 2])) / 2;
+
+                quaternion.x *= Mathf.Sign(quaternion.x * (matrix[2, 1] - matrix[1, 2]));
+                quaternion.y *= Mathf.Sign(quaternion.y * (matrix[0, 2] - matrix[2, 0])); //Son los valores de la matriz que se van a modificar.
+                quaternion.z *= Mathf.Sign(quaternion.z * (matrix[1, 0] - matrix[0, 1]));
+
+                return quaternion;
+            }  
+        }
+
+        public Vec3 lossyScale //Devuelve la escala real del objeto. Esto es en caso de que se apliquen rotaciones y otros cálculos, donde se pierde la escala.
+        {
+            get 
+            {
+                return new Vec3(GetColumn(0).magnitude, GetColumn(1).magnitude, GetColumn(2).magnitude);
+            }    
+        }
+
+        public bool IsIdentity 
+        {
+            get 
+            {
+                return m00 == 1f && m11 == 1f && m22 == 1f && m33 == 1f &&
+                       m01 == 0f && m02 == 0f && m03 == 0f &&
+                       m10 == 0f && m12 == 0f && m13 == 0f &&
+                       m20 == 0f && m21 == 0f && m23 == 0f &&
+                       m30 == 0f && m31 == 0f && m32 == 0f;
+                            
+            }
+        }
+
+        public float determinant 
+        {
+            get 
+            { 
+                return Determinat(this); 
+            }
+        }
+        #endregion
+
+        #region Function
+        public Vector4 GetColumn(int index) 
+        {
+            return new Vector4(this[0, index], this[1, index], this[2, index], this[3, index]);
+        }
+
+        public static float Determinat(MrMatrix matrix)
+        {
+            return
+            matrix[0, 3] * matrix[1, 2] * matrix[2, 1] * matrix[3, 0] - matrix[0, 2] * matrix[1, 3] * matrix[2, 1] * matrix[3, 0] -
+            matrix[0, 3] * matrix[1, 1] * matrix[2, 2] * matrix[3, 0] + matrix[0, 1] * matrix[1, 3] * matrix[2, 2] * matrix[3, 0] +
+            matrix[0, 2] * matrix[1, 1] * matrix[2, 3] * matrix[3, 0] - matrix[0, 1] * matrix[1, 2] * matrix[2, 3] * matrix[3, 0] -
+            matrix[0, 3] * matrix[1, 2] * matrix[2, 0] * matrix[3, 1] + matrix[0, 2] * matrix[1, 3] * matrix[2, 0] * matrix[3, 1] +
+            matrix[0, 3] * matrix[1, 0] * matrix[2, 2] * matrix[3, 1] - matrix[0, 0] * matrix[1, 3] * matrix[2, 2] * matrix[3, 1] -
+            matrix[0, 2] * matrix[1, 0] * matrix[2, 3] * matrix[3, 1] + matrix[0, 0] * matrix[1, 2] * matrix[2, 3] * matrix[3, 1] +
+            matrix[0, 3] * matrix[1, 1] * matrix[2, 0] * matrix[3, 2] - matrix[0, 1] * matrix[1, 3] * matrix[2, 0] * matrix[3, 2] -
+            matrix[0, 3] * matrix[1, 0] * matrix[2, 1] * matrix[3, 2] + matrix[0, 0] * matrix[1, 3] * matrix[2, 1] * matrix[3, 2] +
+            matrix[0, 1] * matrix[1, 0] * matrix[2, 3] * matrix[3, 2] - matrix[0, 0] * matrix[1, 1] * matrix[2, 3] * matrix[3, 2] -
+            matrix[0, 2] * matrix[1, 1] * matrix[2, 0] * matrix[3, 3] + matrix[0, 1] * matrix[1, 2] * matrix[2, 0] * matrix[3, 3] +
+            matrix[0, 2] * matrix[1, 0] * matrix[2, 1] * matrix[3, 3] - matrix[0, 0] * matrix[1, 2] * matrix[2, 1] * matrix[3, 3] -
+            matrix[0, 1] * matrix[1, 0] * matrix[2, 2] * matrix[3, 3] + matrix[0, 0] * matrix[1, 1] * matrix[2, 2] * matrix[3, 3];
+        }
         #endregion
 
 
