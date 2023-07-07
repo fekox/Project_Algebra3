@@ -1,16 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using CustomMath;
-using System.Globalization;
 using System.Runtime.CompilerServices;
-using Unity.IL2CPP.CompilerServices;
-using UnityEngine.Bindings;
-using UnityEngine.Scripting;
 using UnityEngine;
-
-
-UnityEngine.Matrix4x4
 
 public class Matrix : MonoBehaviour
 {
@@ -621,10 +612,32 @@ public class Matrix : MonoBehaviour
         {
             this = TRS(pos, q, s);
         }
-        
+
         public bool ValidTRS() 
         {
-            return ;
+            if (lossyScale == Vec3.Zero) 
+            {
+                return false;
+            }
+
+            else if (m00 == double.NaN && m10 == double.NaN && m20 == double.NaN && m30 == double.NaN &&
+                     m01 == double.NaN && m11 == double.NaN && m21 == double.NaN && m31 == double.NaN &&
+                     m02 == double.NaN && m12 == double.NaN && m22 == double.NaN && m32 == double.NaN &&
+                     m03 == double.NaN && m13 == double.NaN && m23 == double.NaN && m33 == double.NaN) 
+            {
+                return false;
+            }
+            
+            else if (rotation.x > 1 && rotation.x < -1 && rotation.y > 1 && rotation.y < -1 && rotation.z > 1 && rotation.z < -1 && rotation.w > 1 && rotation.w < -1) 
+            {
+                return false;
+
+            }
+
+            else 
+            {
+                return true;
+            }
         }
 
         #endregion
