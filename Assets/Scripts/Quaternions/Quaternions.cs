@@ -392,7 +392,7 @@ public struct MrQuaternion
        
         up = Vec3.Cross(forward, right); //Para asegurarse que el vector up sea valido.
 
-        //Se crea una matrix con los componentes normalizados.
+        //Se crea una matriz3x4 con los componentes normalizados.
         float m00 = right.x; float m01 = right.y; float m02 = right.z;
         float m10 = up.x; float m11 = up.y; float m12 = up.z;
         float m20 = forward.x; float m21 = forward.y; float m22 = forward.z;
@@ -442,7 +442,7 @@ public struct MrQuaternion
         quaternion.z = 0.5f * num5;
         quaternion.w = (m01 - m10) * num2;
 
-        return quaternion;
+        return quaternion; //Asi evitamos el el error que mencionamos en clase (Gimbal lock).
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
