@@ -140,14 +140,14 @@ public struct MrQuaternion
 
     #region Functions
 
-    public static Vec3 FromQuaternionToEuler(MrQuaternion rotation) //Recibe un quaternion u devuelve los ángulos de rotación en un espacio tridimensional.
+    public static Vec3 FromQuaternionToEuler(MrQuaternion rotation) //Recibe un quaternion y devuelve los ángulos de rotación en un espacio tridimensional.
     {
         float sqw = rotation.w * rotation.w; //Guardo en un auxiliar la rotacion al cuadrado de W.
         float sqx = rotation.x * rotation.x; //Guardo en un auxiliar la rotacion al cuadrado de X.
         float sqy = rotation.y * rotation.y; //Guardo en un auxiliar la rotacion al cuadrado de Y.
         float sqz = rotation.z * rotation.z; //Guardo en un auxiliar la rotacion al cuadrado de Z.
         
-        float unit = sqx + sqy + sqz + sqw; //Obtengo la unidad y la guardo en un auxiliar
+        float unit = sqx + sqy + sqz + sqw; //Obtengo la unidad y la guardo en un auxiliar.
         
         float test = rotation.x * rotation.w - rotation.y * rotation.z; 
         
@@ -287,26 +287,32 @@ public struct MrQuaternion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static MrQuaternion Euler(float x, float y, float z)//Devuelve un quaternion con sus coordenadas x, y, z rotadas.
     {
-        float cos;
-        float sin;
-        MrQuaternion qx, qy, qz;
-        MrQuaternion q = identity;
+        float sin = 0.0f;
+        float cos = 0.0f;
 
-        cos = Mathf.Cos(Mathf.Deg2Rad * x * 0.5f); //Para calcular la parte real de la coordenada x.
-        sin = Mathf.Sin(Mathf.Deg2Rad * x * 0.5f); //Para calcular la parte imaginaria de la coordenada x.
+        MrQuaternion qx = identity;
+        MrQuaternion qy = identity;
+        MrQuaternion qz = identity;
+        MrQuaternion r = identity;
+
+        //Calcula la parte imaginaria, luego la setea.
+        cos = Mathf.Cos(Mathf.Deg2Rad * x * 0.5f); 
+        sin = Mathf.Sin(Mathf.Deg2Rad * x * 0.5f); 
         qx = new MrQuaternion(sin, 0f, 0f, cos);
 
-        cos = Mathf.Cos(Mathf.Deg2Rad * y * 0.5f); //Para calcular la parte real de la coordenada y.
-        sin = Mathf.Sin(Mathf.Deg2Rad * y * 0.5f); //Para calcular la parte imaginaria de la coordenada y.
+        //Calcula la parte imaginaria, luego la setea.
+        cos = Mathf.Cos(Mathf.Deg2Rad * y * 0.5f); 
+        sin = Mathf.Sin(Mathf.Deg2Rad * y * 0.5f); 
         qy = new MrQuaternion(0f, sin, 0f, cos);
 
-        cos = Mathf.Cos(Mathf.Deg2Rad * z * 0.5f); //Para calcular la parte real de la coordenada z.
-        sin = Mathf.Sin(Mathf.Deg2Rad * z * 0.5f); //Para calcular la parte imaginaria de la coordenada z.
+        //Calcula la parte imaginaria, luego la setea.
+        cos = Mathf.Cos(Mathf.Deg2Rad * z * 0.5f); 
+        sin = Mathf.Sin(Mathf.Deg2Rad * z * 0.5f);
         qz = new MrQuaternion(0f, 0f, sin, cos);
 
-        q = qx * qy * qz;
+        r = qy * qx * qz; //Calcula la parte real multiplicando todas las partes imaginarias.
 
-        return q;
+        return r; //Devuelve el quaternion.
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
