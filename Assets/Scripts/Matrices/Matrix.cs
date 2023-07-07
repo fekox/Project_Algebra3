@@ -2,7 +2,6 @@ using System;
 using CustomMath;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 public class Matrix : MonoBehaviour
 {
