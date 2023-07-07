@@ -2,6 +2,7 @@ using System;
 using CustomMath;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Analytics;
 
 public class Matrix : MonoBehaviour
 {
@@ -44,7 +45,7 @@ public class Matrix : MonoBehaviour
         #endregion
 
         #region Contruct
-        public MrMatrix(Vector4 column0, Vector4 column1, Vector4 column2, Vector4 column3)
+        public MrMatrix(Vector4 column0, Vector4 column1, Vector4 column2, Vector4 column3) //Crea una matrix4x4 en base a 4 vector4.
         {
             m00 = column0.x;
             m01 = column1.x;
@@ -70,7 +71,7 @@ public class Matrix : MonoBehaviour
         public MrMatrix(float m00, float m01, float m02, float m03,
                         float m10, float m11, float m12, float m13,
                         float m20, float m21, float m22, float m23,
-                        float m30, float m31, float m32, float m33)
+                        float m30, float m31, float m32, float m33) //Crea una matrix4x4 agregando componente por componete.
         {
             this.m00 = m00;
             this.m01 = m01;
@@ -98,7 +99,7 @@ public class Matrix : MonoBehaviour
         #endregion
 
         #region Properties
-        public float this[int index]
+        public float this[int index]//Accede a los componentes de la matrix4x4 a travez de indices en un array.
         {
             get
             {
@@ -214,7 +215,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public float this[int row, int column]
+        public float this[int row, int column]//Accede a las columnas y filas de la matrix4x4 a travez de indices en un array.
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
@@ -228,7 +229,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public static MrMatrix zero
+        public static MrMatrix zero //Devuelve una matrix4x4 cuyos valores son 0.
         {
             get
             {
@@ -254,7 +255,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public static MrMatrix identity
+        public static MrMatrix identity //Devuelve una matrix4x4 con sus valores en 0, exepto por (m00, m11, m22, 33 = la diagonal) cuyos valores son 1.
         {
             get
             {
@@ -267,7 +268,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public MrQuaternion rotation 
+        public MrQuaternion rotation  //Genera una matriz 4x4 de rotación en base a un quaternion.
         {
             get 
             {
@@ -296,7 +297,7 @@ public class Matrix : MonoBehaviour
             }    
         }
 
-        public bool IsIdentity 
+        public bool IsIdentity //Devuelve si la matrix es identity o no.
         {
             get 
             {
@@ -309,7 +310,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public float determinant 
+        public float determinant //Devuelve la determinandte de una matriz. (Determinante = es un valor escalar de la matriz)
         {
             get 
             { 
@@ -317,7 +318,7 @@ public class Matrix : MonoBehaviour
             }
         }
         
-        public MrMatrix transpose 
+        public MrMatrix transpose //Devuelve una matriz en la cual se reemplazan las columnas por las filas y viceversa.
         {
             get 
             {
@@ -325,7 +326,7 @@ public class Matrix : MonoBehaviour
             }
         }
         
-        public MrMatrix inverse 
+        public MrMatrix inverse //Devuelve la matriz inversa.
         {
             get 
             {
@@ -336,7 +337,7 @@ public class Matrix : MonoBehaviour
 
         #region Function
 
-        public static float Determinant(MrMatrix matrix)
+        public static float Determinant(MrMatrix matrix)//Devuelve la determinante de una matriz.
         {
             return
             matrix[0, 3] * matrix[1, 2] * matrix[2, 1] * matrix[3, 0] - matrix[0, 2] * matrix[1, 3] * matrix[2, 1] * matrix[3, 0] -
@@ -353,15 +354,17 @@ public class Matrix : MonoBehaviour
             matrix[0, 1] * matrix[1, 0] * matrix[2, 2] * matrix[3, 3] + matrix[0, 0] * matrix[1, 1] * matrix[2, 2] * matrix[3, 3];
         }
         
-        public static MrMatrix Inverse(MrMatrix matrix) 
+        public static MrMatrix Inverse(MrMatrix matrix) //Devuelve la matriz inversa.
         {
-            float detA = Determinant(matrix); //Debe tener determinante, de otra forma, no es inversible
-            if (detA == 0)
-                return zero;
-
-            MrMatrix aux = new MrMatrix()
+            float detA = Determinant(matrix); //Obtengo la determinante de la matriz.
+            
+            if (detA == 0) //Si da 0 lo igualo a 0.
             {
-                //Lo que hace esto, se encarga de sacar el determinante de cada una de esas posiciones
+                return zero;
+            }
+
+            MrMatrix aux = new MrMatrix() //Creo una matriz auxiliar en la cual guardo la determinante de cada una de esas posiciones.
+            {
                 //------0---------
                 m00 = matrix.m11 * matrix.m22 * matrix.m33 + matrix.m12 * matrix.m23 * matrix.m31 + matrix.m13 * matrix.m21 * matrix.m32 - matrix.m11 * matrix.m23 * matrix.m32 - matrix.m12 * matrix.m21 * matrix.m33 - matrix.m13 * matrix.m22 * matrix.m31,
                 m01 = matrix.m01 * matrix.m23 * matrix.m32 + matrix.m02 * matrix.m21 * matrix.m33 + matrix.m03 * matrix.m22 * matrix.m31 - matrix.m01 * matrix.m22 * matrix.m33 - matrix.m02 * matrix.m23 * matrix.m31 - matrix.m03 * matrix.m21 * matrix.m32,
@@ -384,7 +387,7 @@ public class Matrix : MonoBehaviour
                 m33 = matrix.m00 * matrix.m11 * matrix.m22 + matrix.m01 * matrix.m12 * matrix.m20 + matrix.m02 * matrix.m10 * matrix.m21 - matrix.m00 * matrix.m12 * matrix.m21 - matrix.m01 * matrix.m10 * matrix.m22 - matrix.m02 * matrix.m11 * matrix.m20
             };
 
-            MrMatrix ret = new MrMatrix()
+            MrMatrix ret = new MrMatrix() //Divido las posiciones por el determinante para invertirlos.
             {
                 m00 = aux.m00 / detA,
                 m01 = aux.m01 / detA,
@@ -404,11 +407,14 @@ public class Matrix : MonoBehaviour
                 m33 = aux.m33 / detA
 
             };
-            return ret;
+            
+            return ret; //Devuelvo la matriz invertida.
         }
 
-        public static MrMatrix Rotate(MrQuaternion quaternion) 
+        public static MrMatrix Rotate(MrQuaternion quaternion) //Genera una matriz4x4 de rotación en base a un quaternion.
         {
+            //Obtengo la rotacion con un quaternion.
+            //Se hace asi para evitar numeros negativos.
             double num1 = quaternion.x * 2f;
             double num2 = quaternion.y * 2f;
             double num3 = quaternion.z * 2f;
@@ -424,6 +430,7 @@ public class Matrix : MonoBehaviour
             double num11 = quaternion.w * num2;
             double num12 = quaternion.w * num3;
             
+            //Genero la rotacion de la matrix.
             MrMatrix matrix;
             matrix.m00 = (float)(1.0 - num5 + num6);
             matrix.m10 = (float)(num7 + num12);
@@ -442,11 +449,13 @@ public class Matrix : MonoBehaviour
             matrix.m23 = 0.0f;
             matrix.m33 = 1f;
             
-            return matrix;
+            return matrix;//Devuelvo la matriz.
         }
 
-        public static MrMatrix Scale(Vec3 vector3) 
+        public static MrMatrix Scale(Vec3 vector3) //Escala la matrix utilizando un vector3.
         {
+            //Se le asignas los valores X, Y, Z del vector a la diagonal (m00, m11, m22).
+            //La varianle m33 se le asigna 1 ya que tambien es parte de la diagonal.
             MrMatrix matrix;
 
             matrix.m00 = vector3.x;
@@ -468,11 +477,13 @@ public class Matrix : MonoBehaviour
             matrix.m32 = 0.0f;
             matrix.m33 = 1f;
 
-            return matrix;
+            return matrix; //Devuelvo la matrix escalada.
         }
 
-        public static MrMatrix Traslate(Vec3 vector3) 
+        public static MrMatrix Traslate(Vec3 vector3) //Crea una matriz de translacion a partir de un vetor3.
         {
+            //Se le asignan los valores XYZ a los valores del vector a las variables (m03, m13, m23).
+            //A la diagonal se la setea en 1.
             MrMatrix matrix;
 
             matrix.m00 = 1f;
@@ -498,7 +509,7 @@ public class Matrix : MonoBehaviour
             return matrix;
         }
 
-        public static MrMatrix Transpose(MrMatrix matrix)
+        public static MrMatrix Transpose(MrMatrix matrix)//Devuelve una matriz en la cual se reemplazan las columnas por las filas y viceversa.
         {
             return new MrMatrix()
             {
@@ -517,22 +528,23 @@ public class Matrix : MonoBehaviour
             };
         }
 
-        public static MrMatrix TRS(Vec3 pos, MrQuaternion q, Vec3 s) 
+        public static MrMatrix TRS(Vec3 pos, MrQuaternion q, Vec3 s) //Crea una matrix de trasformacion con las funciones Traslate, Roatate, Scale.
         {
+            //Multiplica la posicion, la rotacion y la escala para obtener la matrix TRS.
             return (Traslate(pos) * Rotate(q) * Scale(s));
         }
 
-        public Vector4 GetColumn(int index)
+        public Vector4 GetColumn(int index)//Devuelve una columna utilizando los indices del array.
         {
             return new Vector4(this[0, index], this[1, index], this[2, index], this[3, index]);
         }
 
-        public Vec3 GetPosition() 
+        public Vec3 GetPosition()//Devuelve la posicion en forma de vector3.
         {
             return new Vec3(m03, m13, m23);
         }
 
-        public Vector4 GetRow(int index) 
+        public Vector4 GetRow(int index) //Devuelve la fila a travez de los indices en un array.
         {
             switch (index)
             {
@@ -553,7 +565,7 @@ public class Matrix : MonoBehaviour
             }
         }
 
-        public Vec3 MultiplyPoint(Vec3 point) 
+        public Vec3 MultiplyPoint(Vec3 point) //Multiplica una matriz4x4 por un vector3.
         {
             Vec3 vector3;
 
@@ -570,7 +582,7 @@ public class Matrix : MonoBehaviour
             return vector3;
         }
 
-        public Vec3 MultiplyPoint3x4(Vec3 point) 
+        public Vec3 MultiplyPoint3x4(Vec3 point) //Multiplica una matriz3x4 con un vector3.
         {
             Vec3 vector3;
 
@@ -578,21 +590,21 @@ public class Matrix : MonoBehaviour
             vector3.y = (float)((double)m10 * (double)point.x + (double)m11 * (double)point.y + (double)m12 * (double)point.z) + m13;
             vector3.z = (float)((double)m20 * (double)point.x + (double)m21 * (double)point.y + (double)m22 * (double)point.z) + m23;
 
-            return vector3;
+            return vector3; //Representacion de una matrix en un espacion tridimencional.
         }
 
-        public Vec3 MultiplyPointVector(Vec3 vector) 
+        public Vec3 MultiplyPointVector(Vec3 vector) //Multiplica un vector3 por una matrix.
         {
-            Vec3 vector3; //No se tienen en cuenta ni la 4ta fila ni la 4ta columna
+            Vec3 vector3;
 
             vector3.x = (float)((double)m00 * (double)vector.x + (double)m01 * (double)vector.y + (double)m02 * (double)vector.z);
             vector3.y = (float)((double)m10 * (double)vector.x + (double)m11 * (double)vector.y + (double)m12 * (double)vector.z);
             vector3.z = (float)((double)m20 * (double)vector.x + (double)m21 * (double)vector.y + (double)m22 * (double)vector.z);
 
-            return vector3;
+            return vector3; //Representacion de una matrix en un espacion tridimencional.
         }
 
-        public void SetColumn(int index, Vector4 column) 
+        public void SetColumn(int index, Vector4 column)  //Setea una columna con los indices de un array.
         {
             this[0, index] = column.x;
             this[1, index] = column.y;
@@ -600,7 +612,7 @@ public class Matrix : MonoBehaviour
             this[3, index] = column.w;
         }
 
-        public void SetRow(int index, Vector4 row) 
+        public void SetRow(int index, Vector4 row) //Setea una fila con los indices de un array.
         {
             this[index, 0] = row.x;
             this[index, 1] = row.y;
@@ -608,12 +620,13 @@ public class Matrix : MonoBehaviour
             this[index, 3] = row.w;
         }
 
-        public void SetTRS(Vec3 pos, MrQuaternion q, Vec3 s) 
+        public void SetTRS(Vec3 pos, MrQuaternion q, Vec3 s) //Setea la TRS.
         {
             this = TRS(pos, q, s);
         }
 
-        public bool ValidTRS() 
+        public bool ValidTRS() //Esta función sirve para verificar si la matriz de transformación es realmente válida.
+
         {
             if (lossyScale == Vec3.Zero) 
             {
@@ -643,7 +656,7 @@ public class Matrix : MonoBehaviour
         #endregion
 
         #region Operators
-        public static Vector4 operator *(MrMatrix lhs, Vector4 vector) 
+        public static Vector4 operator *(MrMatrix lhs, Vector4 vector) //Multiplica una matriz por un vector4.
         {
 
             Vector4 ret;
@@ -656,7 +669,7 @@ public class Matrix : MonoBehaviour
             return ret;
         }
 
-        public static MrMatrix operator *(MrMatrix lhs, MrMatrix rhs) 
+        public static MrMatrix operator *(MrMatrix lhs, MrMatrix rhs) //Multiplica una matriz por otro matriz.
         {
             MrMatrix ret = zero;
 
@@ -668,16 +681,15 @@ public class Matrix : MonoBehaviour
             return ret;
         }
 
-        public static bool operator ==(MrMatrix lhs, MrMatrix rhs) 
+        public static bool operator ==(MrMatrix lhs, MrMatrix rhs) //Devuelve si una matriz es igual a otra.
         {
             return lhs.GetColumn(0) == rhs.GetColumn(0) && lhs.GetColumn(1) == rhs.GetColumn(1) && lhs.GetColumn(2) == rhs.GetColumn(2) && lhs.GetColumn(3) == rhs.GetColumn(3);
         }
 
-        public static bool operator !=(MrMatrix lhs, MrMatrix rhs) 
+        public static bool operator !=(MrMatrix lhs, MrMatrix rhs) //Devuelve si una matriz no es igual a otra. 
         {
             return !(lhs == rhs);
         }
         #endregion
     }
-
 }
