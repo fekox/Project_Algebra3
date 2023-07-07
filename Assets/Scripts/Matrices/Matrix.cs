@@ -9,7 +9,8 @@ using UnityEngine.Bindings;
 using UnityEngine.Scripting;
 using UnityEngine;
 
-UnityEngine.Matrix4x4.GetPosition
+
+UnityEngine.Matrix4x4
 
 public class Matrix : MonoBehaviour
 {
@@ -571,10 +572,70 @@ public class Matrix : MonoBehaviour
             return vector3;
         }
 
+        public void SetColumn(int index, Vector4 column) 
+        {
+            this[0, index] = column.x;
+            this[1, index] = column.y;
+            this[2, index] = column.z;
+            this[3, index] = column.w;
+        }
+
+        public void SetRow(int index, Vector4 row) 
+        {
+            this[index, 0] = row.x;
+            this[index, 1] = row.y;
+            this[index, 2] = row.z;
+            this[index, 3] = row.w;
+        }
+
+        public void SetTRS(Vec3 pos, MrQuaternion q, Vec3 s) 
+        {
+            this = TRS(pos, q, s);
+        }
+        
+        public bool ValidTRS() 
+        {
+            return ;
+        }
 
         #endregion
 
+        #region Operators
+        public static Vector4 operator *(MrMatrix lhs, Vector4 vector) 
+        {
 
+            Vector4 ret;
+
+            ret.x = (float)((double)lhs.m00 * (double)vector.x + (double)lhs.m01 * (double)vector.y + (double)lhs.m02 * (double)vector.z + (double)lhs.m03 * (double)vector.w);
+            ret.y = (float)((double)lhs.m10 * (double)vector.x + (double)lhs.m11 * (double)vector.y + (double)lhs.m12 * (double)vector.z + (double)lhs.m13 * (double)vector.w);
+            ret.z = (float)((double)lhs.m20 * (double)vector.x + (double)lhs.m21 * (double)vector.y + (double)lhs.m22 * (double)vector.z + (double)lhs.m23 * (double)vector.w);
+            ret.w = (float)((double)lhs.m30 * (double)vector.x + (double)lhs.m31 * (double)vector.y + (double)lhs.m32 * (double)vector.z + (double)lhs.m33 * (double)vector.w);
+
+            return ret;
+        }
+
+        public static MrMatrix operator *(MrMatrix lhs, MrMatrix rhs) 
+        {
+            MrMatrix ret = zero;
+
+            for (int i = 0; i < 4; i++)
+            {
+                ret.SetColumn(i, lhs * rhs.GetColumn(i));
+            }
+
+            return ret;
+        }
+
+        public static bool operator ==(MrMatrix lhs, MrMatrix rhs) 
+        {
+            return lhs.GetColumn(0) == rhs.GetColumn(0) && lhs.GetColumn(1) == rhs.GetColumn(1) && lhs.GetColumn(2) == rhs.GetColumn(2) && lhs.GetColumn(3) == rhs.GetColumn(3);
+        }
+
+        public static bool operator !=(MrMatrix lhs, MrMatrix rhs) 
+        {
+            return !(lhs == rhs);
+        }
+        #endregion
     }
 
 }
