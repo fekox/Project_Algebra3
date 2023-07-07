@@ -339,6 +339,11 @@ public class Matrix : MonoBehaviour
 
         public static float Determinant(MrMatrix matrix)//Devuelve la determinante de una matriz.
         {
+            //Teorema de Laplace.
+
+            //El determinante de una matriz es igual a la suma de los productos (resultado de la multiplicacion) de cada elemento
+            //de una fila o columna por el determinante de la fila o columna que se encuentra al lado. 
+
             return
             matrix[0, 3] * matrix[1, 2] * matrix[2, 1] * matrix[3, 0] - matrix[0, 2] * matrix[1, 3] * matrix[2, 1] * matrix[3, 0] -
             matrix[0, 3] * matrix[1, 1] * matrix[2, 2] * matrix[3, 0] + matrix[0, 1] * matrix[1, 3] * matrix[2, 2] * matrix[3, 0] +
