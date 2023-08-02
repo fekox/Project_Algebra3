@@ -482,7 +482,7 @@ public struct MrQuaternion
 
         float t1, t2;
 
-        if (dot < 0.95) //Si dot da menos de 0.99 la interpolacion se hace esferica.
+        if (dot < 0.95) //Si dot da menos de 0.95 la interpolacion se hace esferica.
         {
             float angle = Mathf.Acos(dot); //Obtengo el angulo entre los quaternion.
             
