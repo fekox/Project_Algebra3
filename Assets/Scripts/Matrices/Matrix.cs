@@ -335,7 +335,6 @@ public class Matrix : MonoBehaviour
         #endregion
 
         #region Function
-
         public static float Determinant(MrMatrix matrix)//Devuelve la determinante de una matriz.
         {
             //Teorema de Laplace.
