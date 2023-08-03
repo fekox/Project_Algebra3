@@ -16,7 +16,11 @@ public struct MrQuaternion
 
     #region Contructs
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public MrQuaternion(float x, float y, float z, float w) //Crea un quaternion con un float para cada componente.
+    
+    /// <summary>
+    /// Crea un quaternion con un float para cada componente.
+    /// </summary>
+    public MrQuaternion(float x, float y, float z, float w)
     {
         this.x = x;
         this.y = y;
@@ -25,7 +29,11 @@ public struct MrQuaternion
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public MrQuaternion(Vec3 vec3Part, float rotPart) //Crea un quaternion con un vector3 para los componentes X, Y, Z, y un float para el componente W.
+    /// <summary>
+    /// Crea un quaternion con un vector3 para los componentes 
+    /// X, Y, Z, y un float para el componente W.
+    /// </summary>
+    public MrQuaternion(Vec3 vec3Part, float rotPart)
     {
         this.x = vec3Part.x;
         this.y = vec3Part.y;
@@ -35,8 +43,13 @@ public struct MrQuaternion
     #endregion
 
     #region Properties
-
-    public float this[int index] //Accede a los componentes del Quaternion a traves de indicies en un array.
+    /// <summary>
+    /// Accede a los componentes del Quaternion a traves de indicies en un array.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    /// <exception cref="IndexOutOfRangeException"></exception>
+    public float this[int index]
     { 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -73,30 +86,47 @@ public struct MrQuaternion
         }
     }
 
-    public static MrQuaternion identity //Devuelve un quaternion ¨not rotated¨, no rotado.
-    {                                   //El objecto esta perfectamente alineado con el mundo o los ejes principales.
+    /// <summary>
+    /// Devuelve un quaternion ¨not rotated¨, no rotado.
+    /// 
+    /// El objecto esta perfectamente alineado con el mundo o los ejes principales.
+    /// </summary>
+    public static MrQuaternion identity 
+    {                                  
         get 
         { 
             return new MrQuaternion(0f, 0f, 0f, 1f);
         }
     }
 
-    public Vec3 eulerAngles //Devuelve la representación del ángulo de la rotación en un sistema tridimencional.
+    /// <summary>
+    /// Devuelve la representación del ángulo de la rotación en 
+    /// un sistema tridimencional.
+    /// 
+    /// Recibe un quaternion y devuelve los angulos de rotacion.
+    /// 
+    /// Recibe un Vector3 que representa los ángulos euler y 
+    /// devuelve un quaternion.
+    /// </summary>
+    public Vec3 eulerAngles
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            return FromQuaternionToEuler(this); //Recibe un quaternion y devuelve los angulos de rotacion.
+            return FromQuaternionToEuler(this);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            this = FromEulerToQuaternion(value); //Recibe un Vec3 que representa los ángulos euler y devuelve un quaternion.
+            this = FromEulerToQuaternion(value);
         }
     }
 
-    public MrQuaternion normalized //Devuelve un quaternion normalizes.
+    /// <summary>
+    /// Devuelve un quaternion normalizado.
+    /// </summary>
+    public MrQuaternion normalized
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -105,15 +135,23 @@ public struct MrQuaternion
         }
     }
 
-    public float magnitude //Devuelve la magnitud.
+    /// <summary>
+    /// Devuelve la magnitud.
+    /// 
+    /// Raíz de la suma del cuadrado de cada componente.
+    /// </summary>
+    public float magnitude
     {
         get 
         {
-            return Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2) + Mathf.Pow(w, 2)); //Raíz de la suma del cuadrado de cada componente.
+            return Mathf.Sqrt(Mathf.Pow(x, 2) + Mathf.Pow(y, 2) + Mathf.Pow(z, 2) + Mathf.Pow(w, 2));
         }
     }
 
-    public MrQuaternion zero //Devuelve un quaternion cuyos valores son (0, 0, 0, 0).
+    /// <summary>
+    /// Devuelve un quaternion cuyos valores son (0, 0, 0, 0).
+    /// </summary>
+    public MrQuaternion zero
     { 
         get 
         {
@@ -123,7 +161,6 @@ public struct MrQuaternion
     #endregion
 
     #region Functions
-
     public static Vec3 FromQuaternionToEuler(MrQuaternion rotation) //Recibe un quaternion y devuelve los ángulos de rotación en un espacio tridimensional.
     {
         float sqw = rotation.w * rotation.w; //Guardo en un auxiliar la rotacion al cuadrado de W.
